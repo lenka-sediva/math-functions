@@ -1,0 +1,47 @@
+#version 430
+uniform int mode;
+uniform vec2 size;
+layout (local_size_x = 32, local_size_y = 32) in;
+layout (rgba32f, binding = 0) uniform writeonly image2D img_output;
+
+layout(binding = 1, offset = 0) uniform atomic_uint ac;
+
+void main () {
+  //atomicCounterIncrement(ac);
+	// base pixel color for image
+  vec4 pixel = vec4 (1.0);
+ 
+  //gl_GlobalInvocationID = gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID  
+  //gl_LocalInvocationIndex = gl_LocalInvocationID.z * gl_WorkGroupSize.y * gl_WorkGroupSize.x +
+  //						gl_LocalInvocationID.y * gl_WorkGroupSize.x+
+  //						gl_LocalInvocationID.x
+  
+  ivec2 dims = imageSize (img_output); // fetch image dimensions
+
+  ivec2 pixel_coords;
+  
+  pixel_coords = ivec2(dims*ivec2(gl_GlobalInvocationID.xy)/size.xy);
+  
+  vec2 giID = vec2(gl_GlobalInvocationID.xy)/dims;
+  vec2 liID = vec2(gl_LocalInvocationID.xy)/gl_WorkGroupSize.xy;
+  vec2 wgID = vec2(gl_WorkGroupID.xy)/gl_NumWorkGroups.xy;
+  vec2 nThread  = gl_WorkGroupSize.xy*gl_NumWorkGroups.xy;
+  float indexID = gl_LocalInvocationIndex;///(nThread.x*nThread.y);
+ 
+  	
+  float s = size.x*size.y*32;
+  //s = 256*2560; 
+  float value = atomicCounterIncrement(ac)/float(s);
+  memoryBarrierAtomicCounter();
+  if (mode == 3)	 pixel = vec4(giID, 0.0, 1.0);
+  if (mode == 1)	 pixel = vec4(liID, 0.0, 1.0);
+  if (mode == 2)	 //pixel = vec4(wgID, 0.0, 1.0);
+   		 pixel = vec4(ivec2(gl_GlobalInvocationID.xy)/size.xy, 0,1);
+  if (mode == 0)	 //pixel = vec4(vec3(value), 1.0);
+  pixel = vec4(vec3(indexID), 1.0);
+  
+ 
+  
+  // output to a specific pixel in the image
+  imageStore(img_output, pixel_coords, pixel);
+}
