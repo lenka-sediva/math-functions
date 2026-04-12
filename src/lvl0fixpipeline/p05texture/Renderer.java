@@ -157,16 +157,21 @@ public class Renderer extends AbstractRenderer {
         glLoadIdentity();
 
         // Rendering triangle by fixed pipeline
+        // textura se mapuje od levého horního rohu uv souřadnice (0,0) do pravého dolního rohu uv souřadnice (1,1)
+        // TODO přizpůsobit oknu a ne vertexům, aby se textura roztáhla na celý trojúhelník, ale zachovala poměr stran
         glBegin(GL_TRIANGLES);
-        glTexCoord2f(0, 0);
+        // -1, -1
+        glTexCoord2f(-1f, -1f); // pro textury es používá 2f, protože textury jsou 2D, i když se může použít i 3f, ale třetí souřadnice se ignoruje
         glColor3f(1f, 0f, 0f);
         glVertex3f(-1f, -1, 0.9f);
 
-        glTexCoord2f(0, 1);
+        glTexCoord2f(0.5f, 0f);
+        // 0,1
         glColor3f(0f, 1f, 0f);
         glVertex3f(1, 0, 0.9f);
 
-        glTexCoord2f(1, 0);
+        glTexCoord2f(1f, 0.5f);
+        // 1,0
         glColor3f(0f, 0f, 1f);
         glVertex3f(0, 1, 0.9f);
         glEnd();

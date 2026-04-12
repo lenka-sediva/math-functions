@@ -177,8 +177,8 @@ public class Renderer extends AbstractRenderer {
 
     private void drawPolygons() {
         // volba poradi pro zadani vrcholu (counter clockwise CCW)
-        glFrontFace(GL_CCW);
-        // glFrontFace(GL_CW);
+        glFrontFace(GL_CCW); // proti směru hodinových ručiček (plocha přilehlá k pozorovateli)
+        // glFrontFace(GL_CW); // po směru
 
         // zpusob vykresleni privracenych a odvracenych ploch
         glPolygonMode(GL_FRONT, // GL_FRONT_AND_BACK,GL_FRONT,GL_BACK
@@ -187,7 +187,7 @@ public class Renderer extends AbstractRenderer {
                 GL_LINE); // GL_LINE,GL_POINT,GL_FILL
 
         // povoleni a nastaveni odstraneni odvracenych ploch
-        // glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE); // backface culling
         // glCullFace(GL_BACK);
         // glCullFace(GL_FRONT);
         // glCullFace(GL_FRONT_AND_BACK);

@@ -6,9 +6,10 @@ import static org.lwjgl.opengl.GL11.glMultMatrixd;
 
 public class GluUtils {
 
-    public static void gluLookAt(double ex, double ey, double ez,
-                                 double ax, double ay, double az,
-                                 double ux, double uy, double uz) {
+    public static void gluLookAt(double ex, double ey, double ez, // pozice pozorovatele, kde se nachází v rámci scény
+                                 double ax, double ay, double az, // pozice cíle, kam se pozorovatel dívá
+                                 double ux, double uy, double uz // vektor určující, kde je "nahoru" (up vektor) = kde má hlavičku, aby věděl rotaci
+    ) {
         Vec3D e = new Vec3D(ex, ey, ez);
         Vec3D a = new Vec3D(ax, ay, az);
         Vec3D u = new Vec3D(ux, uy, uz);

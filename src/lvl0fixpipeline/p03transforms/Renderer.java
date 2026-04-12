@@ -158,15 +158,19 @@ public class Renderer extends AbstractRenderer {
         switch (mode) {
             case 0:
                 // rotace postupnou upravou matice
-                glRotatef(1, 0, 0, 1);
+                //glRotatef(1, 0, 0, 1); // rotace o 1 stupeň kolem osy z (0,0,1)
+                //glRotatef(1, 0, -1, 0); // otáčení kolem y ve směru hodinových ručiček beze změny úhlu
                 break;
 
             case 1:
                 // rotace mazanim matice a zvetsovanim uhlu
+                // posun scény (stisknutí M)
                 glLoadIdentity();
                 uhel++;
                 textInfo += ", angle = " + uhel;
+                glTranslatef(5, 5, 0);
                 glRotatef(uhel, 0, 0, 1);
+                glTranslatef(-5,-5,0);
                 break;
 
             case 2:
@@ -219,7 +223,7 @@ public class Renderer extends AbstractRenderer {
                 break;
         }
 
-        glMatrixMode(GL_PROJECTION);
+        glMatrixMode(GL_PROJECTION); // inicializace projekční matice
         glLoadIdentity();
         // nastaveni transformace zobrazovaciho objemu
         if (per)
@@ -231,11 +235,12 @@ public class Renderer extends AbstractRenderer {
 
         // pohledova transformace
         // divame se do sceny z kladne osy x, osa z je svisla
-        gluLookAt(50, 0, 0, 0, 0, 0, 0, 0, 1);
+        gluLookAt(5, 5, 50, 5, 5, 0, 1, 1,0);
+        // up vektor by nikdy neměl mít (0,0,0)
 
         glBegin(GL_TRIANGLE_FAN);
         glColor3f(1.0f, 1.0f, 1.0f);
-        glVertex3f(5.0f, 5.0f, 10.0f);
+        glVertex3f(5.0f, 5.0f, 10.0f); // nastaví Vertex 5, 5, 10 na úrovni pyramidy
         glColor3f(1.0f, 0.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
         glColor3f(0.0f, 1.0f, 0.0f);
