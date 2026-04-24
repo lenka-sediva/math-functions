@@ -51,6 +51,43 @@ public class ControlPanel extends JPanel {
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getViewport().setBackground(BG);
         add(scroll, BorderLayout.CENTER);
+        add(buildBottomBar(), BorderLayout.SOUTH);
+    }
+
+    private JComponent buildBottomBar() {
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottom.setBackground(BG);
+        bottom.setBorder(new MatteBorder(1, 0, 0, 0, BORDER));
+
+        JButton btnInfo = new JButton("O projektu");
+        btnInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnInfo.setFocusPainted(false);
+        btnInfo.setBackground(INPUT);
+        btnInfo.setForeground(FG);
+        btnInfo.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        btnInfo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        btnInfo.addActionListener(e -> showInfoDialog());
+
+        bottom.add(btnInfo);
+
+        return bottom;
+    }
+
+    private void showInfoDialog() {
+        JOptionPane.showMessageDialog(
+                SwingUtilities.getWindowAncestor(this), // pro zobrazení uprostřed aplikace
+                """
+                Autorka: Lenka Šedivá
+                Projekt: 3D vizualizace matematických funkcí
+                Rok: 2026
+                
+                Aplikace umožňuje vykreslovat uživatelem zadané
+                funkce f(x, y, t) pomocí OpenGL (LWJGL)
+                """,
+                "O projektu",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private JPanel buildInner() {
@@ -160,18 +197,18 @@ public class ControlPanel extends JPanel {
         // Klávesové zkratky
         root.add(sectionLabel("Ovládání (GL okno)"));
         for (String hint : new String[]{
-                "Lev. myš — rotace kamery",
-                "Prav. myš — posun (pan)",
+                "Levá myš — rotace kamery",
+                "Pravá myš — posun kamery",
                 "Kolečko  — zoom",
                 "W/S/A/D  — pohyb kamery",
-                "Q/E      — rozhled kamery",
+                "Q/E      — rozhlížení kamery",
                 "F2  drátový model",
                 "F3  normály povrchu",
                 "F4  souřadnicové osy",
                 "F5  podkladová mřížka",
         }) root.add(hintLabel(hint));
 
-        root.add(vgap(14));
+        root.add(vgap(5));
 
         // Status
         lblStatus = new JLabel("Připraveno.");
