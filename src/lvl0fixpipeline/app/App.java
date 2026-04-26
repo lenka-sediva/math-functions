@@ -23,7 +23,7 @@ public class App extends JFrame {
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 700;
 
-	private FuncRenderer renderer;
+	private FunctionRenderer renderer;
 	private GLThread     glThread;
 
 	// Panel, který drží místo pro GL okno
@@ -39,7 +39,7 @@ public class App extends JFrame {
 		setLayout(new BorderLayout());
 		getContentPane().setBackground(new Color(20, 20, 28));
 
-		renderer = new FuncRenderer();
+		renderer = new FunctionRenderer();
 
 		// Placeholder – sem se překryje GLFW okno
 		glPlaceholder = new JPanel();

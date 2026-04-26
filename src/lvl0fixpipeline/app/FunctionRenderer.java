@@ -20,7 +20,7 @@ import static org.lwjgl.opengl.GL11.*;
  *  - Používá GluUtils.gluPerspective + GLCamera.setMatrix() pro transformace
  *  - OpenGL fixed pipeline (GL_LIGHTING, glBegin/glEnd)
  */
-public class FuncRenderer extends AbstractRenderer {
+public class FunctionRenderer extends AbstractRenderer {
     // Parser a mesh
     private MathParser   parser;
     private FunctionMesh mesh;
@@ -57,7 +57,7 @@ public class FuncRenderer extends AbstractRenderer {
     private double  lastMouseX = 0, lastMouseY = 0;
 
     //  Konstruktor — přepíše protected callback pole z AbstractRenderer
-    public FuncRenderer() {
+    public FunctionRenderer() {
         super();
 
         // Klávesnice

@@ -14,7 +14,7 @@ import java.awt.event.*;
  */
 public class ControlPanel extends JPanel {
 
-    private final FuncRenderer renderer;
+    private final FunctionRenderer renderer;
 
     private JTextField tfExpr;
     private JTextField tfXMin, tfXMax;
@@ -39,7 +39,7 @@ public class ControlPanel extends JPanel {
             {"Hvězda",            "sqrt(x*x+y*y)+3*cos(sqrt(x*x+y*y))-3.9"},
     };
 
-    public ControlPanel(FuncRenderer renderer) {
+    public ControlPanel(FunctionRenderer renderer) {
         super();
         this.renderer = renderer;
         setLayout(new BorderLayout());
