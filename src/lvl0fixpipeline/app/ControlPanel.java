@@ -97,7 +97,7 @@ public class ControlPanel extends JPanel {
         root.setBorder(new EmptyBorder(12, 12, 12, 12));
 
         // Nadpis
-        JLabel title = new JLabel("f (x, y, t)");
+        JLabel title = new JLabel("Předpis funkce f(x, y, t)");
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         title.setForeground(new Color(130, 180, 255));
         title.setAlignmentX(LEFT_ALIGNMENT);
@@ -105,7 +105,6 @@ public class ControlPanel extends JPanel {
         root.add(title);
 
         // Výraz
-        root.add(sectionLabel("Předpis funkce"));
         tfExpr = monoField(renderer.getExpression(), 22);
         root.add(tfExpr);
         root.add(vgap(4));
@@ -149,37 +148,50 @@ public class ControlPanel extends JPanel {
 
         // Vzorkování
         root.add(sectionLabel("Vzorkování (kroků)"));
+
         JPanel stepsRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         stepsRow.setOpaque(false);
         stepsRow.setAlignmentX(LEFT_ALIGNMENT);
+
         SpinnerNumberModel sm = new SpinnerNumberModel(renderer.getSteps(), 10, 300, 10);
+
         spinSteps = new JSpinner(sm);
         spinSteps.setPreferredSize(new Dimension(80, 28));
         styleSpinner(spinSteps);
+
+        // Tlačítko
+        JButton btnApply = accentButtonSmall("Aplikovat změny");
+        btnApply.addActionListener(e -> applySettings());
+
+        // přidání do jednoho řádku
         stepsRow.add(spinSteps);
+        stepsRow.add(Box.createRigidArea(new Dimension(8, 0))); // mezera mezi
+        stepsRow.add(btnApply);
+
+        // přidání řádku do root panelu
         root.add(stepsRow);
         root.add(vgap(12));
 
-        // Tlačítko
-        JButton btnApply = accentButton("▶  Aplikovat změny");
-        btnApply.addActionListener(e -> applySettings());
-        root.add(btnApply);
-        root.add(vgap(12));
-
         // Animace
-        root.add(sectionLabel("Animace  ( proměnná t )"));
-        JPanel animRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        root.add(sectionLabel("Animace  (proměnná t)"));
+
+        JPanel animRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         animRow.setOpaque(false);
         animRow.setAlignmentX(LEFT_ALIGNMENT);
+
         cbAnimate = new JCheckBox("Zapnout");
         cbAnimate.setForeground(FG);
         cbAnimate.setBackground(BG);
         cbAnimate.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
         animRow.add(cbAnimate);
+        animRow.add(Box.createRigidArea(new Dimension(8, 0))); // mezera mezi
         animRow.add(smallLabel("Rychlost:"));
+
         sliderAnimSpeed = new JSlider(1, 20, 5);
-        sliderAnimSpeed.setPreferredSize(new Dimension(90, 22));
+        sliderAnimSpeed.setPreferredSize(new Dimension(90, 25));
         sliderAnimSpeed.setOpaque(false);
+
         animRow.add(sliderAnimSpeed);
         root.add(animRow);
         cbAnimate.addActionListener(e ->
@@ -195,17 +207,19 @@ public class ControlPanel extends JPanel {
         root.add(vgap(10));
 
         // Klávesové zkratky
-        root.add(sectionLabel("Ovládání (GL okno)"));
+        root.add(sectionLabel("Ovládání"));
         for (String hint : new String[]{
                 "Levá myš — rotace kamery",
                 "Pravá myš — posun kamery",
-                "Kolečko  — zoom",
-                "W/S/A/D  — pohyb kamery",
-                "Q/E      — rozhlížení kamery",
-                "F2  drátový model",
-                "F3  normály povrchu",
-                "F4  souřadnicové osy",
-                "F5  podkladová mřížka",
+                "Kolečko — zoom",
+                "W/S/A/D — pohyb kamery",
+                "Q/E — rozhlížení kamery",
+                "R — reset kamery",
+                " ",
+                "M — drátový model",
+                "N — normály povrchu",
+                "O — souřadnicové osy",
+                "K — podkladová mřížka",
         }) root.add(hintLabel(hint));
 
         root.add(vgap(5));
@@ -277,14 +291,14 @@ public class ControlPanel extends JPanel {
     }
     private JLabel smallLabel(String t) {
         JLabel l = new JLabel(t);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         l.setForeground(FG);
         return l;
     }
     private JLabel hintLabel(String t) {
         JLabel l = new JLabel(t);
-        l.setFont(new Font("Monospaced", Font.PLAIN, 10));
-        l.setForeground(new Color(120, 120, 150));
+        l.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        l.setForeground(Color.white);
         l.setAlignmentX(LEFT_ALIGNMENT);
         return l;
     }
@@ -345,5 +359,12 @@ public class ControlPanel extends JPanel {
     }
     private Component vgap(int h) {
         return Box.createRigidArea(new Dimension(0, h));
+    }
+
+    private JButton accentButtonSmall(String text) {
+        JButton b = accentButton(text);
+        b.setMaximumSize(new Dimension(180, 32));
+        b.setPreferredSize(new Dimension(180, 32));
+        return b;
     }
 }

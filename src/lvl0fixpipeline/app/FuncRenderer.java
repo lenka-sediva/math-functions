@@ -1,15 +1,10 @@
 package lvl0fixpipeline.app;
 
-import lvl0fixpipeline.global.AbstractRenderer;
-import lvl0fixpipeline.global.GLCamera;
-import lvl0fixpipeline.global.GluUtils;
-import lvl0fixpipeline.app.parser.MathParser;
-import lvl0fixpipeline.app.parser.ParseException;
+import lvl0fixpipeline.global.*;
+import lvl0fixpipeline.app.parser.*;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
+import org.lwjgl.glfw.*;
+import transforms.Vec3D;
 
 import java.nio.DoubleBuffer;
 
@@ -50,6 +45,11 @@ public class FuncRenderer extends AbstractRenderer {
 
     // Kamera
     private GLCamera camera;
+    // defaultní pozice pro reset kamery
+    private double defaultRadius;
+    private double defaultZenith;
+    private double defaultAzimuth;
+    private Vec3D defaultPosition;
 
     // Stav myši pro výpočet delta pohybu
     private boolean mouseLeft  = false;
@@ -75,16 +75,15 @@ public class FuncRenderer extends AbstractRenderer {
                         case GLFW_KEY_D -> camera.right(0.2 * camera.getRadius() * 0.1);
                         case GLFW_KEY_Q -> camera.addAzimuth(-camera.getRadius() * 0.01);
                         case GLFW_KEY_E -> camera.addAzimuth( camera.getRadius() * 0.01);
-                        case GLFW_KEY_LEFT_SHIFT -> camera.up(0.1 * camera.getRadius() * 0.1);
-                        case GLFW_KEY_LEFT_CONTROL -> camera.down(0.1 * camera.getRadius() * 0.1);
+                        case GLFW_KEY_R -> resetCamera();
                     }
                 }
                 if (action == GLFW_PRESS) {
                     switch (key) {
-                        case GLFW_KEY_F2 -> showWireframe = !showWireframe;
-                        case GLFW_KEY_F3 -> showNormals   = !showNormals;
-                        case GLFW_KEY_F4 -> showAxes      = !showAxes;
-                        case GLFW_KEY_F5 -> showGrid      = !showGrid;
+                        case GLFW_KEY_M -> showWireframe = !showWireframe;
+                        case GLFW_KEY_N -> showNormals   = !showNormals;
+                        case GLFW_KEY_O -> showAxes      = !showAxes;
+                        case GLFW_KEY_K -> showGrid      = !showGrid;
                     }
                 }
             }
@@ -174,6 +173,10 @@ public class FuncRenderer extends AbstractRenderer {
         camera.setRadius(10.0);
         camera.setZenith  (Math.toRadians(25));
         camera.setAzimuth (Math.toRadians(30));
+        // uložení default hodnot pro reset kamery
+        defaultRadius  = camera.getRadius();
+        defaultZenith  = camera.getZenith();
+        defaultAzimuth = camera.getAzimuth();
         // Počáteční pozice — střed bude přesunut po buildu meshe
 
         // Mesh
@@ -215,7 +218,7 @@ public class FuncRenderer extends AbstractRenderer {
         }
     }
 
-    //  Sestavení meshe
+    // Sestavení meshe
     private void rebuildMesh(double t) {
         try {
             if (parser == null || meshDirty) {
@@ -227,7 +230,14 @@ public class FuncRenderer extends AbstractRenderer {
             float cx = (xMin + xMax) / 2f;
             float cy = (yMin + yMax) / 2f;
             float cz = (mesh.getZMin() + mesh.getZMax()) / 2f;
-            camera.setPosition(new transforms.Vec3D(cx, cy, cz));
+
+            if (meshDirty) {
+                camera.setPosition(new Vec3D(cx, cy, cz));
+            }
+
+            if (defaultPosition == null) {
+                defaultPosition = new transforms.Vec3D(cx, cy, cz);
+            }
 
             meshDirty = false;
         } catch (ParseException e) {
@@ -347,7 +357,7 @@ public class FuncRenderer extends AbstractRenderer {
         glEnable(GL_LIGHTING);
     }
 
-    //  Veřejné API pro Swing GUI (volané z EDT)
+    // Veřejné API pro Swing GUI (volané z EDT)
     public void applySettings(String expr, float x0, float x1,
                               float y0, float y1, int s) {
         this.expression = expr;
@@ -361,6 +371,16 @@ public class FuncRenderer extends AbstractRenderer {
         this.animating = on;
         this.animSpeed = speed;
         if (!on) this.meshDirty = true;
+    }
+
+    private void resetCamera() {
+        camera.setRadius(defaultRadius);
+        camera.setZenith(defaultZenith);
+        camera.setAzimuth(defaultAzimuth);
+
+        if (defaultPosition != null) {
+            camera.setPosition(defaultPosition);
+        }
     }
 
     public String  getExpression() { return expression; }

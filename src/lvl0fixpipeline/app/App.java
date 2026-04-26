@@ -19,7 +19,7 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class App extends JFrame {
 
-	private static final int PANEL_WIDTH  = 260;
+	private static final int PANEL_WIDTH  = 300;
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 700;
 
@@ -102,7 +102,7 @@ public class App extends JFrame {
 		glThread.requestReposition(loc.x, loc.y, w, h);
 	}
 
-	//  GL vlákno — celá GLFW smyčka tady
+	// GL vlákno — celá GLFW smyčka tady
 	class GLThread extends Thread {
 
 		private volatile boolean stopRequested = false;
