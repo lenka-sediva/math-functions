@@ -75,8 +75,7 @@ public class ControlPanel extends JPanel {
     }
 
     private void showInfoDialog() {
-        JOptionPane.showMessageDialog(
-                SwingUtilities.getWindowAncestor(this), // pro zobrazení uprostřed aplikace
+        JOptionPane pane = new JOptionPane(
                 """
                 Autorka: Lenka Šedivá
                 Projekt: 3D vizualizace matematických funkcí
@@ -85,9 +84,11 @@ public class ControlPanel extends JPanel {
                 Aplikace umožňuje vykreslovat uživatelem zadané
                 funkce f(x, y, t) pomocí OpenGL (LWJGL)
                 """,
-                "O projektu",
                 JOptionPane.INFORMATION_MESSAGE
         );
+        JDialog dialog = pane.createDialog(SwingUtilities.getWindowAncestor(this), "O projektu");
+        dialog.setAlwaysOnTop(true);
+        dialog.setVisible(true);
     }
 
     private JPanel buildInner() {

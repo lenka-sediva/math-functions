@@ -19,7 +19,7 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class App extends JFrame {
 
-	private static final int PANEL_WIDTH  = 300;
+	private static final int PANEL_WIDTH  = 350;
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 700;
 
@@ -84,10 +84,17 @@ public class App extends JFrame {
 			@Override public void componentResized(ComponentEvent e){ syncGLWindow(); }
 		});
 
-		// Zavření → ukončení GL vlákna
+		// Zavření → ukončení GL vlákna; minimalizace/obnova → skrytí/zobrazení GL okna
 		addWindowListener(new WindowAdapter() {
 			@Override public void windowClosing(WindowEvent e) {
 				if (glThread != null) glThread.requestStop();
+			}
+			@Override public void windowIconified(WindowEvent e) {
+				if (glThread != null) glThread.requestVisibility(false);
+			}
+			@Override public void windowDeiconified(WindowEvent e) {
+				if (glThread != null) glThread.requestVisibility(true);
+				syncGLWindow();
 			}
 		});
 	}
@@ -105,10 +112,11 @@ public class App extends JFrame {
 	// GL vlákno — celá GLFW smyčka tady
 	class GLThread extends Thread {
 
-		private volatile boolean stopRequested = false;
-		private volatile boolean windowCreated = false;
-		private volatile int pendingX = -1, pendingY = -1;
-		private volatile int pendingW = -1, pendingH = -1;
+		private volatile boolean stopRequested  = false;
+		private volatile boolean windowCreated  = false;
+		private volatile int  pendingX = -1, pendingY = -1;
+		private volatile int  pendingW = -1, pendingH = -1;
+		private volatile Boolean pendingVisible = null;
 		private long window;
 
 		void requestStop() { stopRequested = true; }
@@ -119,16 +127,19 @@ public class App extends JFrame {
 			pendingW = w; pendingH = h;
 		}
 
+		void requestVisibility(boolean visible) { pendingVisible = visible; }
+
 		@Override
 		public void run() {
 			// Init GLFW
 			if (!glfwInit()) throw new RuntimeException("Cannot init GLFW");
 
 			glfwDefaultWindowHints();
-			glfwWindowHint(GLFW_VISIBLE,   GLFW_TRUE);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // resize řídíme sami
-			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // bez titulku/rámečku
+			glfwWindowHint(GLFW_VISIBLE,       GLFW_TRUE);
+			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // resize řídíme sami
+			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // bez titulku/rámečku
 			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
+			glfwWindowHint(GLFW_FLOATING,      GLFW_TRUE);  // zůstane nad Swing oknem
 
 			Point loc = glPlaceholder.getLocationOnScreen();
 			int   w   = glPlaceholder.getWidth();
