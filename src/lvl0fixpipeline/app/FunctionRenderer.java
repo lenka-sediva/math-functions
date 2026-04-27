@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * Renderer vizualizéru matematických funkcí f(x, y, t)
+ * RENDERER — OpenGL visualizátor matematických funkcí f(x, y, t)
  *
  * Architektura:
  *  - Dědí AbstractRenderer, přepisuje protected GLFW callback pole
@@ -30,7 +30,7 @@ public class FunctionRenderer extends AbstractRenderer {
     private volatile float   xMin = -6f, xMax = 6f;
     private volatile float   yMin = -6f, yMax = 6f;
     private volatile int     steps     = 80;
-    private volatile boolean meshDirty = true;
+    private volatile boolean meshDirty = true; // flag = mesh je zastaralý, potřebuje rebuild
 
     // Animace
     private volatile boolean animating = false;
@@ -45,7 +45,7 @@ public class FunctionRenderer extends AbstractRenderer {
 
     // Kamera
     private GLCamera camera;
-    // defaultní pozice pro reset kamery
+    // Výchozí hodnoty pro reset
     private double defaultRadius;
     private double defaultZenith;
     private double defaultAzimuth;
@@ -56,7 +56,9 @@ public class FunctionRenderer extends AbstractRenderer {
     private boolean mouseRight = false;
     private double  lastMouseX = 0, lastMouseY = 0;
 
-    //  Konstruktor — přepíše protected callback pole z AbstractRenderer
+    /**
+     * Konstruktor — inicializuje GLFW callbacky
+     */
     public FunctionRenderer() {
         super();
 
@@ -64,9 +66,11 @@ public class FunctionRenderer extends AbstractRenderer {
         glfwKeyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
+                // ESC → zavřít okno
                 if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
                     glfwSetWindowShouldClose(window, true);
 
+                // Kontinuální akce (opakují se při držení tlačítka)
                 if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                     switch (key) {
                         case GLFW_KEY_W -> camera.forward(0.2 * camera.getRadius() * 0.1);
@@ -78,6 +82,7 @@ public class FunctionRenderer extends AbstractRenderer {
                         case GLFW_KEY_R -> resetCamera();
                     }
                 }
+                // Jedenkrát při stisknutí
                 if (action == GLFW_PRESS) {
                     switch (key) {
                         case GLFW_KEY_M -> showWireframe = !showWireframe;
@@ -93,12 +98,14 @@ public class FunctionRenderer extends AbstractRenderer {
         glfwMouseButtonCallback = new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
+                // Načte aktuální pozici myši
                 DoubleBuffer xb = BufferUtils.createDoubleBuffer(1);
                 DoubleBuffer yb = BufferUtils.createDoubleBuffer(1);
                 glfwGetCursorPos(window, xb, yb);
                 lastMouseX = xb.get(0);
                 lastMouseY = yb.get(0);
 
+                // Flagy pro levé/pravé tlačítko
                 if (button == GLFW_MOUSE_BUTTON_LEFT)
                     mouseLeft  = (action == GLFW_PRESS);
                 if (button == GLFW_MOUSE_BUTTON_RIGHT)
@@ -110,18 +117,19 @@ public class FunctionRenderer extends AbstractRenderer {
         glfwCursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double x, double y) {
+                // Počítá delta pohybu
                 double dx = x - lastMouseX;
                 double dy = y - lastMouseY;
                 lastMouseX = x;
                 lastMouseY = y;
 
+                // Levá myš — orbituj kolem cíle
                 if (mouseLeft) {
-                    // Orbit: azimut + zenit
                     camera.addAzimuth(Math.toRadians(-dx * 0.4));
                     camera.addZenith (Math.toRadians( dy * 0.4));
                 }
+                // Pravá myš — pan (posuň kameru)
                 if (mouseRight) {
-                    // Pan: strafe + up/down
                     double panScale = camera.getRadius() * 0.001;
                     camera.right(-dx * panScale);
                     camera.up   ( dy * panScale);
@@ -138,59 +146,69 @@ public class FunctionRenderer extends AbstractRenderer {
         };
     }
 
+    /**
+     * INICIALIZACE — nastav OpenGL, kameru, osvětlení
+     */
     @Override
     public void init() {
         glClearColor(0.08f, 0.08f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glEnable(GL_NORMALIZE);
-        glShadeModel(GL_SMOOTH);
+        glEnable(GL_NORMALIZE); // Automaticky normalizuj normály
+        glShadeModel(GL_SMOOTH); // Smooth shading
 
         // Osvětlení
         glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT0);
-        glEnable(GL_LIGHT1);
-        glEnable(GL_COLOR_MATERIAL);
+        glEnable(GL_LIGHT0);    // Hlavní světlo
+        glEnable(GL_LIGHT1);    // Doplňkové światło
+        glEnable(GL_COLOR_MATERIAL); // Ať se barva ovlivňuje osvětlením
+
+        // Materiál objektu
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
-        // Hlavní světlo (směrové, shora-zprava)
+        // Hlavní světlo — shora zprava (teplé)
         glLightfv(GL_LIGHT0, GL_POSITION, new float[]{ 5f,  8f,  6f, 0f});
         glLightfv(GL_LIGHT0, GL_DIFFUSE,  new float[]{ 1f,  1f, 0.95f, 1f});
         glLightfv(GL_LIGHT0, GL_AMBIENT,  new float[]{ 0.12f, 0.12f, 0.18f, 1f});
         glLightfv(GL_LIGHT0, GL_SPECULAR, new float[]{ 0.8f, 0.8f, 0.8f, 1f});
 
-        // Doplňkové světlo (zezdola, studené)
+        // Doplňkové světlo — zezdola (chladné, jen pro vyplnění stínů)
         glLightfv(GL_LIGHT1, GL_POSITION, new float[]{-4f, -6f, -3f, 0f});
         glLightfv(GL_LIGHT1, GL_DIFFUSE,  new float[]{ 0.25f, 0.25f, 0.45f, 1f});
         glLightfv(GL_LIGHT1, GL_AMBIENT,  new float[]{ 0f, 0f, 0f, 1f});
 
+        // Vlastnosti materiálu
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,  new float[]{0.35f, 0.35f, 0.35f, 1f});
         glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 40f);
 
         // Kamera - orbitální, ale s nastavením na third-person (neotáčí se kolem sebe, ale hledí stále dopředu)
         camera = new GLCamera();
-        camera.setFirstPerson(false);
+        camera.setFirstPerson(false); // Third-person mode
         camera.setRadius(10.0);
-        camera.setZenith  (Math.toRadians(25));
-        camera.setAzimuth (Math.toRadians(30));
-        // uložení default hodnot pro reset kamery
+        camera.setZenith  (Math.toRadians(25)); // Úhel od nahoře
+        camera.setAzimuth (Math.toRadians(30)); // Azimutální úhel
+        
+        // Uloží default hodnoty pro reset
         defaultRadius  = camera.getRadius();
         defaultZenith  = camera.getZenith();
         defaultAzimuth = camera.getAzimuth();
-        // Počáteční pozice — střed bude přesunut po buildu meshe
 
         // Mesh
         mesh = new FunctionMesh();
         rebuildMesh(0.0);
     }
 
+    /**
+     * RENDER LOOP — voláno každý frame
+     */
     @Override
     public void display() {
         // Animační tik
         if (animating) {
-            animTime += 0.016 * animSpeed;
+            animTime += 0.016 * animSpeed; // ~60fps
             rebuildMesh(animTime);
         } else if (meshDirty) {
+            // Pokud se změnila funkce → přebuduj jednou
             rebuildMesh(animTime);
         }
 
@@ -205,7 +223,7 @@ public class FunctionRenderer extends AbstractRenderer {
         // View (kamera)
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        camera.setMatrix(); // volá GluUtils.gluLookAt interně
+        camera.setMatrix(); // Nastaví gluLookAt interně
 
         // Scéna
         if (showAxes) drawAxes();
@@ -218,15 +236,19 @@ public class FunctionRenderer extends AbstractRenderer {
         }
     }
 
-    // Sestavení meshe
+    /**
+     * Přebuduje mesh — parseuje výraz, vzorkuje funkci, počítá normály
+     */
     private void rebuildMesh(double t) {
         try {
+            // Pokud je výraz nový nebo zastaralý → reparse
             if (parser == null || meshDirty) {
                 parser = new MathParser(expression);
             }
+            // Builduj mesh
             mesh.build(parser, xMin, xMax, yMin, yMax, steps, t);
 
-            // Vycentrování orbit kamery
+            // Vycentruj orbit — střed na středu funkce
             float cx = (xMin + xMax) / 2f;
             float cy = (yMin + yMax) / 2f;
             float cz = (mesh.getZMin() + mesh.getZMax()) / 2f;
@@ -245,7 +267,10 @@ public class FunctionRenderer extends AbstractRenderer {
         }
     }
 
-    //  Kreslicí metody
+    // KRESLÍCÍ METODY
+    /**
+     * Vykresli plný povrch se stínováním a osvětlením
+     */
     private void drawSurface() {
         glEnable(GL_LIGHTING);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -265,6 +290,9 @@ public class FunctionRenderer extends AbstractRenderer {
         glEnd();
     }
 
+    /**
+     * Vykresli drátový model (bez vyplnění)
+     */
     private void drawWireframe() {
         glDisable(GL_LIGHTING);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -286,16 +314,20 @@ public class FunctionRenderer extends AbstractRenderer {
         glEnable(GL_LIGHTING);
     }
 
+    /**
+     * Vykresli normály jako malé žluté čáry
+     */
     private void drawNormals() {
         glDisable(GL_LIGHTING);
-        glColor3f(1f, 1f, 0.2f);
+        glColor3f(1f, 1f, 0.2f); // Žlutá
         glLineWidth(1f);
         float[] verts   = mesh.getVertices();
         float[] normals = mesh.getNormals();
-        float   scale   = 0.12f;
+        float   scale   = 0.12f; // Délka normály
 
         glBegin(GL_LINES);
-        for (int i = 0; i < verts.length / 3; i += 5) { // každý 5. vrchol
+        // Vykresli každý 5. vertex (aby nebyl chaos)
+        for (int i = 0; i < verts.length / 3; i += 5) {
             float vx = verts[i*3],   vy = verts[i*3+1],   vz = verts[i*3+2];
             float nx = normals[i*3], ny = normals[i*3+1], nz = normals[i*3+2];
             glVertex3f(vx,            vy,            vz);
@@ -305,10 +337,14 @@ public class FunctionRenderer extends AbstractRenderer {
         glEnable(GL_LIGHTING);
     }
 
+    /**
+     * Vykresli souřadnicové osy (X=red, Y=green, Z=blue)
+     */
     private void drawAxes() {
         glDisable(GL_LIGHTING);
-        glLineWidth(1f); // >1.0 deprecated v Core Profile
+        glLineWidth(1f);
 
+        // Střed a rozpětí os
         float cx    = (xMin + xMax) / 2f;
         float cy    = (yMin + yMax) / 2f;
         float cz    = (mesh == null) ? 0f : (mesh.getZMin() + mesh.getZMax()) / 2f;
@@ -316,15 +352,18 @@ public class FunctionRenderer extends AbstractRenderer {
         float zSpan = (mesh == null) ? span : (mesh.getZMax() - mesh.getZMin()) * 0.75f + 0.5f;
 
         glBegin(GL_LINES);
-        glColor3f(1f, 0.25f, 0.25f); // X – červená
+        // X — červená
+        glColor3f(1f, 0.25f, 0.25f);
         glVertex3f(cx - span, cy, cz);
         glVertex3f(cx + span, cy, cz);
 
-        glColor3f(0.25f, 1f, 0.25f); // Y – zelená
+        // Y — zelená
+        glColor3f(0.25f, 1f, 0.25f);
         glVertex3f(cx, cy - span, cz);
         glVertex3f(cx, cy + span, cz);
 
-        glColor3f(0.35f, 0.55f, 1f); // Z – modrá
+        // Z — modrá
+        glColor3f(0.35f, 0.55f, 1f);
         glVertex3f(cx, cy, cz - zSpan);
         glVertex3f(cx, cy, cz + zSpan);
         glEnd();
@@ -333,20 +372,26 @@ public class FunctionRenderer extends AbstractRenderer {
         glEnable(GL_LIGHTING);
     }
 
+    /**
+     * Vykresli podkladovou mřížku (v rovině Z)
+     */
     private void drawXYGrid() {
         glDisable(GL_LIGHTING);
         glLineWidth(1f);
-        glColor3f(0.28f, 0.28f, 0.38f);
+        glColor3f(0.28f, 0.28f, 0.38f); // Tmavě modrá
 
+        // Z-pozice mřížky (pod povrchem)
         float zGround = (mesh == null) ? 0f : mesh.getZMin() - 0.15f;
         float stepX   = (xMax - xMin) / 10f;
         float stepY   = (yMax - yMin) / 10f;
 
         glBegin(GL_LINES);
+        // Svislé čáry (konstantní X)
         for (float x = xMin; x <= xMax + stepX * 0.01f; x += stepX) {
             glVertex3f(x, yMin, zGround);
             glVertex3f(x, yMax, zGround);
         }
+        // Vodorovné čáry (konstantní Y)
         for (float y = yMin; y <= yMax + stepY * 0.01f; y += stepY) {
             glVertex3f(xMin, y, zGround);
             glVertex3f(xMax, y, zGround);
@@ -357,22 +402,31 @@ public class FunctionRenderer extends AbstractRenderer {
         glEnable(GL_LIGHTING);
     }
 
-    // Veřejné API pro Swing GUI (volané z EDT)
+    // PUBLIC API — Swing GUI
+    /**
+     * Aplikuje nová nastavení z GUI
+     */
     public void applySettings(String expr, float x0, float x1,
                               float y0, float y1, int s) {
         this.expression = expr;
         this.xMin = x0;  this.xMax = x1;
         this.yMin = y0;  this.yMax = y1;
-        this.steps = Math.max(10, Math.min(s, 300));
+        this.steps = Math.max(10, Math.min(s, 300)); // Limituj kroky
         this.meshDirty = true;
     }
 
+    /**
+     * Zapne/vypne animaci
+     */
     public void setAnimating(boolean on, float speed) {
         this.animating = on;
         this.animSpeed = speed;
         if (!on) this.meshDirty = true;
     }
 
+    /**
+     * Resetuje kameru na výchozí pozici
+     */
     private void resetCamera() {
         camera.setRadius(defaultRadius);
         camera.setZenith(defaultZenith);
