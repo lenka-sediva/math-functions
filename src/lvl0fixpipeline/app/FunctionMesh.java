@@ -104,7 +104,7 @@ public class FunctionMesh {
             }
         }
 
-        // ROK 3: Počítá normály z parciálních derivací: N = (-dz/dx, -dz/dy, 1)
+        // KROK 3: Počítá normály z parciálních derivací: N = (-dz/dx, -dz/dy, 1)
         for (int iy = 0; iy < N; iy++) {
             for (int ix = 0; ix < N; ix++) {
                 int idx = iy * N + ix;

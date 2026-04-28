@@ -39,10 +39,9 @@ public class ControlPanel extends JPanel {
     private static final String[][] PRESETS = {
             {"Sinc",              "sin(sqrt(x*x+y*y)) / (sqrt(x*x+y*y)+0.01)"},
             {"Sedlo",             "x*x - y*y"},
-            {"Gauss",             "exp(-(x*x+y*y)/4)"},
             {"sin·cos",           "sin(x) * cos(y)"},
             {"Kužel",             "sqrt(x*x+y*y)"},
-            {"Ripple",            "sin(x*x+y*y)"},
+            {"Vlnění",            "sin(x*x+y*y)"},
             {"Mexický klobouk",   "(1-(x*x+y*y)/4)*exp(-(x*x+y*y)/4)"},
             {"Vlna+čas",          "sin(x+t)*cos(y+t)"},
             {"Manta",             "sin(x)+cos(y)+sin(x*y)"},
