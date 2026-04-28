@@ -160,7 +160,7 @@ public class FunctionRenderer extends AbstractRenderer {
         // Osvětlení
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);    // Hlavní světlo
-        glEnable(GL_LIGHT1);    // Doplňkové światło
+        glEnable(GL_LIGHT1);    // Doplňkové světło
         glEnable(GL_COLOR_MATERIAL); // Ať se barva ovlivňuje osvětlením
 
         // Materiál objektu
@@ -251,7 +251,7 @@ public class FunctionRenderer extends AbstractRenderer {
             // Vycentruj orbit — střed na středu funkce
             float cx = (xMin + xMax) / 2f;
             float cy = (yMin + yMax) / 2f;
-            float cz = (mesh.getZMin() + mesh.getZMax()) / 2f;
+            float cz = 0f; // Osa Z na 0
 
             if (meshDirty) {
                 camera.setPosition(new Vec3D(cx, cy, cz));
@@ -347,7 +347,7 @@ public class FunctionRenderer extends AbstractRenderer {
         // Střed a rozpětí os
         float cx    = (xMin + xMax) / 2f;
         float cy    = (yMin + yMax) / 2f;
-        float cz    = (mesh == null) ? 0f : (mesh.getZMin() + mesh.getZMax()) / 2f;
+        float cz    = 0f; // Osa Z na 0
         float span  = Math.max(xMax - xMin, yMax - yMin) * 0.65f;
         float zSpan = (mesh == null) ? span : (mesh.getZMax() - mesh.getZMin()) * 0.75f + 0.5f;
 
