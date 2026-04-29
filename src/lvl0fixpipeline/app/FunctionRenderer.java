@@ -89,6 +89,9 @@ public class FunctionRenderer extends AbstractRenderer {
                         case GLFW_KEY_N -> showNormals   = !showNormals;
                         case GLFW_KEY_O -> showAxes      = !showAxes;
                         case GLFW_KEY_K -> showGrid      = !showGrid;
+                        case GLFW_KEY_X -> setViewFromAxis(0); // Pohled z osy X
+                        case GLFW_KEY_Y -> setViewFromAxis(1); // Pohled z osy Y
+                        case GLFW_KEY_Z -> setViewFromAxis(2); // Pohled z osy Z
                     }
                 }
             }
@@ -422,6 +425,28 @@ public class FunctionRenderer extends AbstractRenderer {
         this.animating = on;
         this.animSpeed = speed;
         if (!on) this.meshDirty = true;
+    }
+
+    /**
+     * Nastaví pohled z osy (X=0, Y=1, Z=2)
+     */
+    private void setViewFromAxis(int axis) {
+        // Nastaví vysoký radius pro vzdálený pohled
+        camera.setRadius(25.0);
+        switch (axis) {
+            case 0: // Pohled z osy X (kladná X)
+                camera.setAzimuth(0);
+                camera.setZenith(0);
+                break;
+            case 1: // Pohled z osy Y (kladná Y)
+                camera.setAzimuth(Math.PI / 2);
+                camera.setZenith(0);
+                break;
+            case 2: // Pohled z osy Z (kladná Z)
+                camera.setAzimuth(0);
+                camera.setZenith(Math.PI / 2);
+                break;
+        }
     }
 
     /**
