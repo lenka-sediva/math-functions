@@ -16,7 +16,6 @@ import java.util.Set;
  * - Speciální konstanty (pi, e)
  */
 public class Tokenizer {
-
     // seznam všech dostupných funkcí
     private static final Set<String> FUNCTIONS = Set.of(
             "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
@@ -53,7 +52,7 @@ public class Tokenizer {
                     num.append(expr.charAt(i++));
                 }
                 
-                // Vědecký zapis (scientfic notaion): e.g. 1e-3, 2.5e+10
+                // Vědecký zápis (scientific notation): 1e-3, 2.5e+10
                 if (i < expr.length() && (expr.charAt(i) == 'e')) {
                     num.append(expr.charAt(i++));
                     if (i < expr.length() && (expr.charAt(i) == '+' || expr.charAt(i) == '-')) {
@@ -75,7 +74,7 @@ public class Tokenizer {
             // Identifikátory: funkce, proměnné, konstanty
             if (Character.isLetter(c)) {
                 StringBuilder ident = new StringBuilder();
-                // Načti identifikátor (abeceda, cifry, underscore)
+                // Načte identifikátor (abeceda, cifry, underscore)
                 while (i < expr.length() && (Character.isLetterOrDigit(expr.charAt(i)) || expr.charAt(i) == '_')) {
                     ident.append(expr.charAt(i++));
                 }

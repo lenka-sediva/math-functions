@@ -21,7 +21,6 @@ import static org.lwjgl.glfw.GLFW.*;
  * - GLFW okno je "floating" bez dekoracích, přesně se překrývá s Swing komponentou
  */
 public class App extends JFrame {
-
 	// postranní panel
 	private static final int PANEL_WIDTH  = 350;
 	// GL okno
@@ -116,7 +115,7 @@ public class App extends JFrame {
 	}
 
 	/**
-	 * Přesune a změní velikost GLFW okna aby se přesně překrýval s glPlaceholder
+	 * Přesune a změní velikost GLFW okna, aby se přesně překrýval s glPlaceholder
 	 * (volá se z Swing EDT, požadavek se předá GL vláknu)
 	 */
 	void syncGLWindow() {
@@ -132,10 +131,8 @@ public class App extends JFrame {
 	 * VNITŘNÍ VLÁKNO — běží GLFW event loop
 	 * 
 	 * Komunikace se Swing EDTem je synchronizovaná přes volatile pole
-	 * (pendingX, pendingY, pendingW, pendingH atd.)
 	 */
 	class GLThread extends Thread {
-
 		private volatile boolean stopRequested  = false;
 		private volatile boolean windowCreated  = false;
 		private volatile int  pendingX = -1, pendingY = -1; // -1 = žádný požadavek
@@ -166,7 +163,7 @@ public class App extends JFrame {
 			// Nastavení hints pro nové okno
 			glfwDefaultWindowHints();
 			glfwWindowHint(GLFW_VISIBLE,       GLFW_TRUE);
-			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // velikost řídíme sami z Swingu
+			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // velikost řídíme sami ze Swingu
 			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // bez titulku a rámu
 			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE); // nezískává focus automaticky
 			glfwWindowHint(GLFW_FLOATING,      GLFW_TRUE);  // zůstane nad Swing oknem
@@ -204,14 +201,13 @@ public class App extends JFrame {
 			glfwSwapInterval(1); // vsync ON
 			GL.createCapabilities(); // načte OpenGL function pointery
 
-
 			renderer.init(); // inicializuje renderer (nastavení osvětlení, kamery atd.)
 			windowCreated = true; // signál pro Swing, že okno je připraveno
 			syncGLWindow(); // počáteční synchronizace pozice
 
 			// Hlavní loop
 			while (!stopRequested && !glfwWindowShouldClose(window)) {
-				// Zpracuje čekající přemístění/resize z Swingu
+				// Zpracuje čekající přemístění/resize ze Swingu
 				if (pendingX >= 0) {
 					glfwSetWindowPos (window, pendingX, pendingY);
 					glfwSetWindowSize(window, Math.max(pendingW, 100), Math.max(pendingH, 100));

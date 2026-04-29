@@ -58,10 +58,12 @@ public class FunctionMesh {
             double y = yMin + (yMax - yMin) * iy / (N - 1);
             for (int ix = 0; ix < N; ix++) {
                 double x = xMin + (xMax - xMin) * ix / (N - 1);
+
                 // Evaluuje f(x, y, t)
                 double val = parser.evaluateSafe(x, y, t);
                 float fval = Double.isNaN(val) ? Float.NaN : (float) val;
                 z[iy * N + ix] = fval;
+
                 // Najde min/max (ignoruje NaN)
                 if (!Float.isNaN(fval)) {
                     if (fval < zMinLocal) zMinLocal = fval;
@@ -152,7 +154,7 @@ public class FunctionMesh {
         for (int iy = 0; iy < steps; iy++) {
             for (int ix = 0; ix < steps; ix++) {
                 // Čtyři rohy čtverce
-                int tl = iy * N + ix;       // top-left
+                int tl = iy * N + ix;        // top-left
                 int tr = tl + 1;             // top-right
                 int bl = (iy + 1) * N + ix;  // bottom-left
                 int br = bl + 1;             // bottom-right
@@ -186,6 +188,7 @@ public class FunctionMesh {
     private float[] colorFromGradient(float t) {
         // Zajistí, že t je v [0,1]
         t = Math.max(0f, Math.min(1f, t));
+
         // Mapuje t na index v poli barev
         float scaled = t * (COLOR_STOPS.length - 1);
         int lo = (int) scaled;

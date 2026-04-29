@@ -23,7 +23,6 @@ import java.awt.event.*;
  * Veškeré změny se aplikují na FunctionRenderer přes applySettings()
  */
 public class ControlPanel extends JPanel {
-
     private final FunctionRenderer renderer; // reference na renderer, pro předávání nastavení
 
     // UI komponenty
@@ -74,7 +73,7 @@ public class ControlPanel extends JPanel {
         bottom.setBorder(new MatteBorder(1, 0, 0, 0, BORDER));
         bottom.setPreferredSize(new Dimension(0, 36));
 
-        // Legenda os — vlevo, vertikálně centrovaná
+        // Legenda os — vlevo
         JPanel legend = new JPanel();
         legend.setLayout(new BoxLayout(legend, BoxLayout.X_AXIS));
         legend.setOpaque(false);
@@ -98,7 +97,7 @@ public class ControlPanel extends JPanel {
         legend.add(Box.createRigidArea(new Dimension(8, 0)));
         legend.add(lz);
 
-        // Tlačítko O projektu — vpravo, vertikálně centrované
+        // Tlačítko O projektu — vpravo
         JPanel right = new JPanel();
         right.setLayout(new BoxLayout(right, BoxLayout.X_AXIS));
         right.setOpaque(false);
@@ -141,7 +140,7 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * Vytvořuje vnitřek panelu se všemi ovládacími prvky
+     * Vytvoří vnitřek panelu se všemi ovládacími prvky
      */
     private JPanel buildInner() {
         JPanel root = new JPanel();
@@ -169,6 +168,7 @@ public class ControlPanel extends JPanel {
         for (int i = 0; i < PRESETS.length; i++) names[i+1] = PRESETS[i][0];
         JComboBox<String> cbPresets = new JComboBox<>(names);
         styleCombo(cbPresets);
+
         // Když uživatel vybere z dropdown → dá to výraz do textového pole
         cbPresets.addActionListener(e -> {
             int s = cbPresets.getSelectedIndex();
@@ -249,6 +249,7 @@ public class ControlPanel extends JPanel {
 
         animRow.add(sliderAnimSpeed);
         root.add(animRow);
+
         // Listener na checkbox — zapne/vypne animaci
         cbAnimate.addActionListener(e ->
                 renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f));
@@ -328,17 +329,13 @@ public class ControlPanel extends JPanel {
         }
     }
 
-    /**
-     * Nastaví text a barvu status labelu
-     */
+    // Nastaví text a barvu status labelu
     private void status(String msg, boolean err) {
         lblStatus.setText(msg);
         lblStatus.setForeground(err ? new Color(255, 100, 100) : new Color(100, 200, 130));
     }
 
-    /**
-     * Pomocná funkce — formátuje float (bez zbytečných nul za čárkou)
-     */
+    // Pomocná funkce — formátuje float (bez zbytečných nul za čárkou)
     private static String fmt(float v) {
         return v == (int) v ? String.valueOf((int) v) : String.valueOf(v);
     }
@@ -406,7 +403,7 @@ public class ControlPanel extends JPanel {
         return tf;
     }
     
-    /** Velké accent tlačítko s hover efektem */
+    // Velké accent tlačítko s hover efektem
     private JButton accentButton(String text) {
         JButton b = new JButton(text);
         b.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -417,6 +414,7 @@ public class ControlPanel extends JPanel {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setAlignmentX(LEFT_ALIGNMENT);
         b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
         // Hover efekt — změní barvu
         b.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { b.setBackground(new Color(100, 150, 255)); }
@@ -425,7 +423,7 @@ public class ControlPanel extends JPanel {
         return b;
     }
     
-    /** Formátuje ComboBox */
+    // Formátuje ComboBox
     private void styleCombo(JComboBox<?> cb) {
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         cb.setBackground(INPUT);
@@ -434,7 +432,7 @@ public class ControlPanel extends JPanel {
         cb.setAlignmentX(LEFT_ALIGNMENT);
     }
     
-    /** Formátuje Spinner */
+    // Formátuje Spinner
     private void styleSpinner(JSpinner sp) {
         JComponent ed = sp.getEditor();
         if (ed instanceof JSpinner.DefaultEditor de) {
@@ -444,12 +442,12 @@ public class ControlPanel extends JPanel {
         }
     }
     
-    /** Vytvoří vertikální mezeru */
+    // Vytvoří vertikální mezeru mezi komponentami
     private Component vgap(int h) {
         return Box.createRigidArea(new Dimension(0, h));
     }
 
-    /** Malé accent tlačítko — upravené accentButton */
+    // Malé accent tlačítko — upravené accentButton s menší velikostí
     private JButton accentButtonSmall(String text) {
         JButton b = accentButton(text);
         b.setMaximumSize(new Dimension(240, 32));

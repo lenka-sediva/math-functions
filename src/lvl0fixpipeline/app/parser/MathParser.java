@@ -12,11 +12,11 @@ import java.util.List;
  * 2. evaluate() — Efektivně vyhodnocuje postfixový výraz
  * 
  * Používá se pro f(x, y, t) kde se x a y mění v každém pixelu,
- * ale výraz je stejný — takže parsing se dělá jen jednou!
+ * ale výraz je stejný — takže parsing se dělá jen jednou
  */
 public class MathParser {
     private final Tokenizer tokenizer = new Tokenizer(); // přesměruje string na seznam tokenů
-    private final ShuntingYard shuntingYard = new ShuntingYard(); // kovnert infix => postfix
+    private final ShuntingYard shuntingYard = new ShuntingYard(); // konvert infix => postfix
     private List<Token> postfix; // postfixový seznam tokenů
     private String expression; // původní výraz (pro UI a debug)
 

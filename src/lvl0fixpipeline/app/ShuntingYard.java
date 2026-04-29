@@ -16,7 +16,6 @@ import java.util.*;
  * Příklad: "2 + 3 * 4" → postfix: "2 3 4 * +" → výsledek: 14
  */
 public class ShuntingYard {
-
     /**
      * Priorita (precedence) operátorů: vyšší číslo = vyšší priorita
      * Pořadí vyhodnocování:
@@ -36,7 +35,7 @@ public class ShuntingYard {
     }
 
     /**
-     * Vrací true, pokud je operátor PRAVĚ asociativní
+     * Vrací true, pokud je operátor PRÁVĚ asociativní
      * (vyhodnocuje se zprava doleva, např. a^b^c = a^(b^c))
      */
     private static boolean isRightAssoc(String op) {
@@ -101,6 +100,7 @@ public class ShuntingYard {
                         throw new ParseException("Mismatched parentheses: missing '('");
                     }
                     opStack.pop(); // zahodí levou závorku
+
                     // Pokud je na stacku funkce — popuj ji
                     if (!opStack.isEmpty() && opStack.peek().type == TokenType.FUNCTION) {
                         output.add(opStack.pop());

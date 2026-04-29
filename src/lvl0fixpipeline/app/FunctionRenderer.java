@@ -30,7 +30,7 @@ public class FunctionRenderer extends AbstractRenderer {
     private volatile float   xMin = -6f, xMax = 6f;
     private volatile float   yMin = -6f, yMax = 6f;
     private volatile int     steps     = 80;
-    private volatile boolean meshDirty = true; // flag = mesh je zastaralý, potřebuje rebuild
+    private volatile boolean meshDirty = true; // flag, že mesh je zastaralý, potřebuje rebuild
 
     // Animace
     private volatile boolean animating = false;
@@ -45,6 +45,7 @@ public class FunctionRenderer extends AbstractRenderer {
 
     // Kamera
     private GLCamera camera;
+
     // Výchozí hodnoty pro reset
     private double defaultRadius;
     private double defaultZenith;
@@ -82,6 +83,7 @@ public class FunctionRenderer extends AbstractRenderer {
                         case GLFW_KEY_R -> resetCamera();
                     }
                 }
+
                 // Jedenkrát při stisknutí
                 if (action == GLFW_PRESS) {
                     switch (key) {
