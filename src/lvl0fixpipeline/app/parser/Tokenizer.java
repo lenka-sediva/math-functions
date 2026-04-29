@@ -66,7 +66,7 @@ public class Tokenizer {
                 try {
                     tokens.add(new Token(Double.parseDouble(num.toString())));
                 } catch (NumberFormatException e) {
-                    throw new ParseException("Invalid number: " + num);
+                    throw new ParseException("Neplatné číslo: " + num);
                 }
                 continue;
             }
@@ -95,7 +95,7 @@ public class Tokenizer {
                         if (FUNCTIONS.contains(id)) {
                             tokens.add(new Token(TokenType.FUNCTION, id));
                         } else {
-                            throw new ParseException("Unknown identifier: '" + id + "'");
+                            throw new ParseException("Neznámá funkce: '" + id + "'");
                         }
                     }
                 }
@@ -163,7 +163,7 @@ public class Tokenizer {
                     i++;
                 }
                 
-                default -> throw new ParseException("Unexpected character: '" + c + "'");
+                default -> throw new ParseException("Neočekávaný znak: '" + c + "'");
             }
         }
         

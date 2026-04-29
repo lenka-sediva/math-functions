@@ -74,4 +74,17 @@ public class MathParser {
     public String getExpression() {
         return expression;
     }
+
+    /**
+     * Zkontroluje, jestli výraz obsahuje proměnnou t (animace)
+     * @return true pokud výraz obsahuje t, false jinak
+     */
+    public boolean containsTimeVariable() {
+        for (Token token : postfix) {
+            if (token.type == TokenType.VARIABLE_T) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -250,9 +250,42 @@ public class ControlPanel extends JPanel {
         animRow.add(sliderAnimSpeed);
         root.add(animRow);
 
-        // Listener na checkbox — zapne/vypne animaci
-        cbAnimate.addActionListener(e ->
-                renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f));
+        // Listener na checkbox — kontroluje přítomnost 't' a zapne/vypne animaci
+        cbAnimate.addActionListener(e -> {
+            if (cbAnimate.isSelected()) {
+                // Kontrola přítomnosti parametru 't'
+                String expr = tfExpr.getText().trim();
+                if (expr.isEmpty()) {
+                    status("Chyba: Nejdřív zadejte výraz", true);
+                    cbAnimate.setSelected(false);
+                    return;
+                }
+
+                try {
+                    MathParser parser = new MathParser(expr);
+                    boolean hasTimeVariable = parser.containsTimeVariable();
+
+                    if (!hasTimeVariable) {
+                        status("Chyba: Parametr 't' není v předpisu", true);
+                        cbAnimate.setSelected(false);
+                        return;
+                    }
+
+                    // OK — je t v předpisu
+                    status("Animace zapnutá — " + expr, false);
+                } catch (ParseException pe) {
+                    status("Chyba: " + pe.getMessage(), true);
+                    cbAnimate.setSelected(false);
+                    return;
+                }
+            } else {
+                // Animace vypnutá
+                status("Animace vypnutá", false);
+            }
+
+            // Nakonec aplikuj nastavení
+            renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f);
+        });
         root.add(vgap(5));
 
         // Oddělovač
@@ -313,8 +346,10 @@ public class ControlPanel extends JPanel {
             if (y0 >= y1) { status("Y min musí být < Y max", true); return; }
 
             // Ověření výrazu
+            MathParser parser;
             try {
-                new MathParser(expr).evaluate(0, 0, 0);
+                parser = new MathParser(expr);
+                parser.evaluate(0, 0, 0);
             } catch (ParseException pe) {
                 status("Chyba: " + pe.getMessage(), true); return;
             }
@@ -322,6 +357,7 @@ public class ControlPanel extends JPanel {
             // Vše je OK → pošle do rendereru
             renderer.applySettings(expr, x0, x1, y0, y1, s);
             renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f);
+
             status("OK: " + expr, false);
 
         } catch (NumberFormatException e) {
