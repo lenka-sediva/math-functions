@@ -66,14 +66,44 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * Vytvoří spodní lištu s tlačítkem "O projektu"
+     * Vytvoří spodní lištu s tlačítkem "O projektu" a legendou barev pro osy
      */
     private JComponent buildBottomBar() {
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBackground(BG);
         bottom.setBorder(new MatteBorder(1, 0, 0, 0, BORDER));
+        bottom.setPreferredSize(new Dimension(0, 36));
 
-        // Tlačítko "O projektu"
+        // Legenda os — vlevo, vertikálně centrovaná
+        JPanel legend = new JPanel();
+        legend.setLayout(new BoxLayout(legend, BoxLayout.X_AXIS));
+        legend.setOpaque(false);
+        legend.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+
+        JLabel lx = new JLabel("■ X = osa X");
+        lx.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lx.setForeground(new Color(255, 64, 64));
+
+        JLabel ly = new JLabel("■ Y = osa Y");
+        ly.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        ly.setForeground(new Color(64, 255, 64));
+
+        JLabel lz = new JLabel("■ Z = osa Z");
+        lz.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lz.setForeground(new Color(90, 140, 255));
+
+        legend.add(lx);
+        legend.add(Box.createRigidArea(new Dimension(8, 0)));
+        legend.add(ly);
+        legend.add(Box.createRigidArea(new Dimension(8, 0)));
+        legend.add(lz);
+
+        // Tlačítko O projektu — vpravo, vertikálně centrované
+        JPanel right = new JPanel();
+        right.setLayout(new BoxLayout(right, BoxLayout.X_AXIS));
+        right.setOpaque(false);
+        right.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+
         JButton btnInfo = new JButton("O projektu");
         btnInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnInfo.setFocusPainted(false);
@@ -81,11 +111,12 @@ public class ControlPanel extends JPanel {
         btnInfo.setForeground(FG);
         btnInfo.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         btnInfo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        // Action listener — zobrazí info dialog
         btnInfo.addActionListener(e -> showInfoDialog());
+        right.add(btnInfo);
 
-        bottom.add(btnInfo);
+        bottom.add(legend, BorderLayout.WEST);
+        bottom.add(right, BorderLayout.EAST);
+
         return bottom;
     }
 
@@ -221,7 +252,7 @@ public class ControlPanel extends JPanel {
         // Listener na checkbox — zapne/vypne animaci
         cbAnimate.addActionListener(e ->
                 renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f));
-        root.add(vgap(14));
+        root.add(vgap(5));
 
         // Oddělovač
         JSeparator sep = new JSeparator();
@@ -229,7 +260,7 @@ public class ControlPanel extends JPanel {
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
         sep.setAlignmentX(LEFT_ALIGNMENT);
         root.add(sep);
-        root.add(vgap(10));
+        root.add(vgap(5));
 
         // Klávesové zkratky
         root.add(sectionLabel("Ovládání"));
@@ -240,6 +271,7 @@ public class ControlPanel extends JPanel {
                 "W/S/A/D — pohyb kamery",
                 "Q/E — rozhlížení kamery",
                 "R — reset kamery",
+                "XYZ — pohledy z os",
                 " ",
                 "M — drátový model",
                 "N — normály povrchu",
@@ -420,8 +452,8 @@ public class ControlPanel extends JPanel {
     /** Malé accent tlačítko — upravené accentButton */
     private JButton accentButtonSmall(String text) {
         JButton b = accentButton(text);
-        b.setMaximumSize(new Dimension(180, 32));
-        b.setPreferredSize(new Dimension(180, 32));
+        b.setMaximumSize(new Dimension(240, 32));
+        b.setPreferredSize(new Dimension(240, 32));
         return b;
     }
 }
