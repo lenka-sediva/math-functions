@@ -42,6 +42,7 @@ public class FunctionRenderer extends AbstractRenderer {
     private boolean showNormals   = false;
     private boolean showAxes      = true;
     private boolean showGrid      = true;
+    private boolean isOrthographic = false;
 
     // Kamera
     private GLCamera camera;
@@ -91,6 +92,7 @@ public class FunctionRenderer extends AbstractRenderer {
                         case GLFW_KEY_N -> showNormals   = !showNormals;
                         case GLFW_KEY_O -> showAxes      = !showAxes;
                         case GLFW_KEY_K -> showGrid      = !showGrid;
+                        case GLFW_KEY_P -> isOrthographic = !isOrthographic; // Přepínání ortografický/perspektivní
                         case GLFW_KEY_X -> setViewFromAxis(0); // Pohled z osy X
                         case GLFW_KEY_Y -> setViewFromAxis(1); // Pohled z osy Y
                         case GLFW_KEY_Z -> setViewFromAxis(2); // Pohled z osy Z
@@ -223,7 +225,13 @@ public class FunctionRenderer extends AbstractRenderer {
         // Projekce
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        GluUtils.gluPerspective(45.0, (double) width / Math.max(1, height), 0.05, 500.0);
+        double aspect = (double) width / Math.max(1, height);
+        if (isOrthographic) {
+            double orthoSize = camera.getRadius(); // velikost ortho projekce závisí na vzdálenosti kamery
+            glOrtho(-orthoSize, orthoSize, -orthoSize * aspect, orthoSize * aspect, -500, 500);
+        } else {
+            GluUtils.gluPerspective(45.0, aspect, 0.05, 500.0);
+        }
 
         // View (kamera)
         glMatrixMode(GL_MODELVIEW);
@@ -433,8 +441,7 @@ public class FunctionRenderer extends AbstractRenderer {
      * Nastaví pohled z osy (X=0, Y=1, Z=2)
      */
     private void setViewFromAxis(int axis) {
-        // Nastaví vysoký radius pro vzdálený pohled
-        camera.setRadius(25.0);
+        camera.setRadius(15.0); // radius pro vzdálenost pozorovatele
         switch (axis) {
             case 0: // Pohled z osy X (kladná X)
                 camera.setAzimuth(0);
@@ -458,6 +465,7 @@ public class FunctionRenderer extends AbstractRenderer {
         camera.setRadius(defaultRadius);
         camera.setZenith(defaultZenith);
         camera.setAzimuth(defaultAzimuth);
+        isOrthographic = false; // reset na perspektivní pohled
 
         if (defaultPosition != null) {
             camera.setPosition(defaultPosition);

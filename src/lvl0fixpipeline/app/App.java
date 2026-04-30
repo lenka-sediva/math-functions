@@ -25,7 +25,7 @@ public class App extends JFrame {
 	private static final int PANEL_WIDTH  = 350;
 	// GL okno
 	private static final int GL_WIDTH     = 900;
-	private static final int GL_HEIGHT    = 700;
+	private static final int GL_HEIGHT    = 725;
 
 	private FunctionRenderer renderer;
 	private GLThread     glThread;

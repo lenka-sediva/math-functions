@@ -297,7 +297,8 @@ public class ControlPanel extends JPanel {
         root.add(vgap(5));
 
         // Klávesové zkratky
-        root.add(sectionLabel("Ovládání"));
+        // Sekce 1 — Ovládání kamery
+        root.add(sectionLabel("Ovládání kamery"));
         for (String hint : new String[]{
                 "Levá myš — rotace kamery",
                 "Pravá myš — posun kamery",
@@ -306,12 +307,21 @@ public class ControlPanel extends JPanel {
                 "Q/E — rozhlížení kamery",
                 "R — reset kamery",
                 "XYZ — pohledy z os",
-                " ",
+                "P — přepnutí pohledu ortho/perspektiva"
+        }) {
+            root.add(hintLabel(hint));
+        }
+
+        // Sekce 2 — Zobrazení
+        root.add(sectionLabel("Zobrazení"));
+        for (String hint : new String[]{
                 "M — drátový model",
                 "N — normály povrchu",
                 "O — souřadnicové osy",
-                "K — podkladová mřížka",
-        }) root.add(hintLabel(hint));
+                "K — podkladová mřížka"
+        }) {
+            root.add(hintLabel(hint));
+        }
 
         root.add(vgap(5));
 
