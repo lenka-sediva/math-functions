@@ -18,7 +18,9 @@ import static org.lwjgl.glfw.GLFW.*;
  * Technologie:
  * - GLFW okno běží v samostatném vlákně
  * - Synchronizace mezi Swing UI a GL vláknem přes volatile pole
- * - GLFW okno je "floating" bez dekoracích, přesně se překrývá s Swing komponentou
+ * - GLFW okno je dynamicky "floating" pouze pokud má aplikace fokus,
+ *  aby umožnilo přebírat fokus jiným oknům (např. pro kopírování textu z konzole)
+ *
  */
 public class App extends JFrame {
 	// postranní panel
