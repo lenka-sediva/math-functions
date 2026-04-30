@@ -81,7 +81,7 @@ public class FunctionRenderer extends AbstractRenderer {
                         case GLFW_KEY_D -> camera.right(0.2 * camera.getRadius() * 0.1);
                         case GLFW_KEY_Q -> camera.addAzimuth(-camera.getRadius() * 0.01);
                         case GLFW_KEY_E -> camera.addAzimuth( camera.getRadius() * 0.01);
-                        case GLFW_KEY_R -> resetCamera();
+                        case GLFW_KEY_R -> resetCamera(true);
                     }
                 }
 
@@ -447,7 +447,10 @@ public class FunctionRenderer extends AbstractRenderer {
      * Nastaví pohled z osy (X=0, Y=1, Z=2)
      */
     private void setViewFromAxis(int axis) {
+        resetCamera(false);
+
         camera.setRadius(15.0); // radius pro vzdálenost pozorovatele
+
         switch (axis) {
             case 0: // Pohled z osy X (kladná X)
                 camera.setAzimuth(0);
@@ -467,11 +470,14 @@ public class FunctionRenderer extends AbstractRenderer {
     /**
      * Resetuje kameru na výchozí pozici
      */
-    private void resetCamera() {
+    private void resetCamera(boolean resetOrtho) {
         camera.setRadius(defaultRadius);
         camera.setZenith(defaultZenith);
         camera.setAzimuth(defaultAzimuth);
-        isOrthographic = false; // reset na perspektivní pohled
+
+        if (resetOrtho) {
+            isOrthographic = false; // reset na perspektivní pohled
+        }
 
         if (defaultPosition != null) {
             camera.setPosition(defaultPosition);
