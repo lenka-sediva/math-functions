@@ -10,7 +10,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * HLAVNÍ APLIKACE — Swing okno s embeddovaným OpenGL renderem
- * 
+ *
  * Struktura:
  * - Vlevo: OpenGL canvas (GLFW okno vložené do AWT)
  * - Vpravo: Swing ovládací panel pro parametry
@@ -18,9 +18,7 @@ import static org.lwjgl.glfw.GLFW.*;
  * Technologie:
  * - GLFW okno běží v samostatném vlákně
  * - Synchronizace mezi Swing UI a GL vláknem přes volatile pole
- * - GLFW okno je dynamicky "floating" pouze pokud má aplikace fokus,
- *  aby umožnilo přebírat fokus jiným oknům (např. pro kopírování textu z konzole)
- *
+ * - GLFW okno je "floating" bez dekorací a přesně se překrývá se Swing komponentou
  */
 public class App extends JFrame {
 	// postranní panel
@@ -82,7 +80,7 @@ public class App extends JFrame {
 			@Override public void componentShown(ComponentEvent e)  { startGL(); }
 			@Override public void componentMoved(ComponentEvent e)  { syncGLWindow(); }
 			@Override public void componentResized(ComponentEvent e){ syncGLWindow(); }
-			
+
 			/** Startuje GL vlákno jen jednou */
 			private void startGL() {
 				if (started) return;
@@ -105,22 +103,6 @@ public class App extends JFrame {
 				if (glThread != null) glThread.requestStop();
 			}
 		});
-
-		// Listener na fokus okna — dynamicky mění floating GL okna
-		addWindowFocusListener(new WindowFocusListener() {
-			@Override
-			public void windowGainedFocus(WindowEvent e) {
-				if (glThread != null && glThread.isWindowCreated()) {
-					glThread.setFloating(true);
-				}
-			}
-			@Override
-			public void windowLostFocus(WindowEvent e) {
-				if (glThread != null && glThread.isWindowCreated()) {
-					glThread.setFloating(false);
-				}
-			}
-		});
 	}
 
 	/**
@@ -138,7 +120,7 @@ public class App extends JFrame {
 
 	/**
 	 * VNITŘNÍ VLÁKNO — běží GLFW event loop
-	 * 
+	 *
 	 * Komunikace se Swing EDTem je synchronizovaná přes volatile pole
 	 */
 	class GLThread extends Thread {
@@ -146,13 +128,11 @@ public class App extends JFrame {
 		private volatile boolean windowCreated  = false;
 		private volatile int  pendingX = -1, pendingY = -1; // -1 = žádný požadavek
 		private volatile int  pendingW = -1, pendingH = -1;
-		private volatile boolean pendingFloatingSet = false;
-		private volatile boolean pendingFloatingValue = true; // výchozí floating
 		private long window;
 
 		// Setter pro stopRequested
 		void requestStop() { stopRequested = true; }
-		
+
 		// Getter pro windowCreated
 		boolean isWindowCreated() { return windowCreated; }
 
@@ -160,12 +140,6 @@ public class App extends JFrame {
 		void requestReposition(int x, int y, int w, int h) {
 			pendingX = x; pendingY = y;
 			pendingW = w; pendingH = h;
-		}
-
-		// Nastaví floating
-		void setFloating(boolean floating) {
-			pendingFloatingValue = floating;
-			pendingFloatingSet = true;
 		}
 
 		@Override
@@ -179,7 +153,7 @@ public class App extends JFrame {
 			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // velikost řídíme sami ze Swingu
 			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // bez titulku a rámu
 			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE); // nezískává focus automaticky
-			glfwWindowHint(GLFW_FLOATING,      GLFW_FALSE);  // umožní ostatním oknům přebírat fokus
+			glfwWindowHint(GLFW_FLOATING,      GLFW_TRUE);  // zůstane nad Swing oknem
 
 			// Zjistí počáteční pozici a velikost z placeholderu
 			Point loc = glPlaceholder.getLocationOnScreen();
@@ -191,9 +165,6 @@ public class App extends JFrame {
 					Math.max(w, 100), Math.max(h, 100),
 					"GL", 0L, 0L);
 			if (window == 0L) throw new RuntimeException("Cannot create GLFW window");
-
-			// Nastaví výchozí floating na true
-			glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_TRUE);
 
 			// Umístí okno na správné místo
 			glfwSetWindowPos(window, loc.x, loc.y);
@@ -231,12 +202,6 @@ public class App extends JFrame {
 					renderer.setWidth(Math.max(pendingW, 100));
 					renderer.setHeight(Math.max(pendingH, 100));
 					pendingX = -1;
-				}
-
-				// Nastaví floating, pokud bylo požadováno
-				if (pendingFloatingSet) {
-					glfwSetWindowAttrib(window, GLFW_FLOATING, pendingFloatingValue ? GLFW_TRUE : GLFW_FALSE);
-					pendingFloatingSet = false;
 				}
 
 				// Hlavní renderovací volání
