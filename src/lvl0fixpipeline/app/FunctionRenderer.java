@@ -227,7 +227,7 @@ public class FunctionRenderer extends AbstractRenderer {
         glLoadIdentity();
         double aspect = (double) width / Math.max(1, height);
         if (isOrthographic) {
-            double orthoSize = camera.getRadius(); // velikost ortho projekce závisí na vzdálenosti kamery
+            double orthoSize = Math.max(xMax - xMin, yMax - yMin) * 0.75; // velikost ortho projekce založená na rozsahu funkce
             glOrtho(-orthoSize, orthoSize, -orthoSize * aspect, orthoSize * aspect, -500, 500);
         } else {
             GluUtils.gluPerspective(45.0, aspect, 0.05, 500.0);
@@ -449,7 +449,7 @@ public class FunctionRenderer extends AbstractRenderer {
     private void setViewFromAxis(int axis) {
         resetCamera(false);
 
-        camera.setRadius(15.0); // radius pro vzdálenost pozorovatele
+        camera.setRadius(20.0); // radius pro vzdálenost pozorovatele
 
         switch (axis) {
             case 0: // Pohled z osy X (kladná X)
