@@ -113,8 +113,8 @@ public class Tokenizer {
                     // Detekce unárního mínu:
                     // Je-li na začátku výrazu, po operátoru nebo levé závorce → unární
                     if (tokens.isEmpty() ||
-                            tokens.get(tokens.size() - 1).type == TokenType.OPERATOR ||
-                            tokens.get(tokens.size() - 1).type == TokenType.LEFT_PAREN) {
+                            tokens.getLast().type == TokenType.OPERATOR ||
+                            tokens.getLast().type == TokenType.LEFT_PAREN) {
                         tokens.add(new Token(TokenType.OPERATOR, "u-")); // unární minus
                     } else {
                         tokens.add(new Token(TokenType.OPERATOR, "-")); // binární minus

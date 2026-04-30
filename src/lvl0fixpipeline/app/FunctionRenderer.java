@@ -490,5 +490,4 @@ public class FunctionRenderer extends AbstractRenderer {
     public float   getYMin()       { return yMin; }
     public float   getYMax()       { return yMax; }
     public int     getSteps()      { return steps; }
-    public boolean isAnimating()   { return animating; }
 }

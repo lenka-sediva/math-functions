@@ -27,9 +27,9 @@ public class App extends JFrame {
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 725;
 
-	private FunctionRenderer renderer;
+	private final FunctionRenderer renderer;
 	private GLThread     glThread;
-	private JPanel       glPlaceholder; // Swing panel držící místo pro GL okno
+	private final JPanel       glPlaceholder; // Swing panel držící místo pro GL okno
 
 	/**
 	 * Vstupní bod aplikace — spustí App v EDT
@@ -102,15 +102,6 @@ public class App extends JFrame {
 			@Override public void windowClosing(WindowEvent e) {
 				if (glThread != null) glThread.requestStop();
 			}
-			/** Okno se minimalizuje → skryje GL okno */
-			@Override public void windowIconified(WindowEvent e) {
-				if (glThread != null) glThread.requestVisibility(false);
-			}
-			/** Okno se obnovuje → znovu zobrazí GL okno */
-			@Override public void windowDeiconified(WindowEvent e) {
-				if (glThread != null) glThread.requestVisibility(true);
-				syncGLWindow();
-			}
 		});
 	}
 
@@ -137,7 +128,6 @@ public class App extends JFrame {
 		private volatile boolean windowCreated  = false;
 		private volatile int  pendingX = -1, pendingY = -1; // -1 = žádný požadavek
 		private volatile int  pendingW = -1, pendingH = -1;
-		private volatile Boolean pendingVisible = null;
 		private long window;
 
 		// Setter pro stopRequested
@@ -151,9 +141,6 @@ public class App extends JFrame {
 			pendingX = x; pendingY = y;
 			pendingW = w; pendingH = h;
 		}
-
-		// Nastaví pending visibility request
-		void requestVisibility(boolean visible) { pendingVisible = visible; }
 
 		@Override
 		public void run() {

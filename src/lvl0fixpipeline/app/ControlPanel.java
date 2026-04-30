@@ -110,7 +110,7 @@ public class ControlPanel extends JPanel {
         btnInfo.setForeground(FG);
         btnInfo.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         btnInfo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnInfo.addActionListener(e -> showInfoDialog());
+        btnInfo.addActionListener(_ -> showInfoDialog());
         right.add(btnInfo);
 
         bottom.add(legend, BorderLayout.WEST);
@@ -170,7 +170,7 @@ public class ControlPanel extends JPanel {
         styleCombo(cbPresets);
 
         // Když uživatel vybere z dropdown → dá to výraz do textového pole
-        cbPresets.addActionListener(e -> {
+        cbPresets.addActionListener(_ -> {
             int s = cbPresets.getSelectedIndex();
             if (s > 0) tfExpr.setText(PRESETS[s-1][1]);
         });
@@ -216,7 +216,7 @@ public class ControlPanel extends JPanel {
 
         // Tlačítko "Aplikovat změny"
         JButton btnApply = accentButtonSmall("Aplikovat změny");
-        btnApply.addActionListener(e -> applySettings());
+        btnApply.addActionListener(_ -> applySettings());
 
         // Přidá spinner a tlačítko do jednoho řádku
         stepsRow.add(spinSteps);
@@ -251,7 +251,7 @@ public class ControlPanel extends JPanel {
         root.add(animRow);
 
         // Listener na checkbox — kontroluje přítomnost 't' a zapne/vypne animaci
-        cbAnimate.addActionListener(e -> {
+        cbAnimate.addActionListener(_ -> {
             if (cbAnimate.isSelected()) {
                 // Kontrola přítomnosti parametru 't'
                 String expr = tfExpr.getText().trim();

@@ -90,7 +90,6 @@ public class FunctionMesh {
                 double x = xMin + (xMax - xMin) * ix / (N - 1);
                 int idx = iy * N + ix;
                 float fz = z[idx];
-                if (Float.isNaN(fz)) fz = Float.NaN; // NaN zůstane NaN (nevykreslí se) a zajistí, že se nebudou počítat normály
 
                 // Uloží pozici
                 vertices[idx * 3]     = (float) x;
@@ -118,16 +117,16 @@ public class FunctionMesh {
                 int iyU = Math.min(iy + 1, N - 1);
 
                 // Z-hodnota vpravo/vlevo
-                float zR = safeZ(z, iyU * N + ixR, iy, ix, z[idx]);
-                float zL = safeZ(z, iy * N + ixL, iy, ix, z[idx]);
+                float zR = safeZ(z, iy * N + ixR, z[idx]);
+                float zL = safeZ(z, iy * N + ixL, z[idx]);
 
                 // Parciální derivace v X: ∂z/∂x ≈ (zR - zL) / Δx
                 float dx = ((xMax - xMin) / (N - 1)) * (ixR - ixL);
                 float dzdx = (dx == 0) ? 0f : (zR - zL) / dx;
 
                 // Z-hodnota nahoru/dolu
-                float zU2 = safeZ(z, iyU * N + ix, iy, ix, z[idx]);
-                float zD2 = safeZ(z, iyD * N + ix, iy, ix, z[idx]);
+                float zU2 = safeZ(z, iyU * N + ix, z[idx]);
+                float zD2 = safeZ(z, iyD * N + ix, z[idx]);
 
                 // Parciální derivace v Y: ∂z/∂y ≈ (zU - zD) / Δy
                 float dy = ((yMax - yMin) / (N - 1)) * (iyU - iyD);
@@ -175,7 +174,7 @@ public class FunctionMesh {
     /**
      * Bezpečně načte Z-hodnotu, vrátí fallback pro NaN
      */
-    private float safeZ(float[] z, int i, int iy, int ix, float fallback) {
+    private float safeZ(float[] z, int i, float fallback) {
         if (i < 0 || i >= z.length) return fallback;
         float v = z[i];
         return Float.isNaN(v) ? fallback : v;
