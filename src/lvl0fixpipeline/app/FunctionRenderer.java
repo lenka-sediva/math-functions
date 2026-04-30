@@ -238,6 +238,13 @@ public class FunctionRenderer extends AbstractRenderer {
         glLoadIdentity();
         camera.setMatrix(); // Nastaví gluLookAt interně
 
+        // Posun do středu
+        float cx = (xMin + xMax) / 2f;
+        float cy = (yMin + yMax) / 2f;
+        float cz = (mesh.getZMin() + mesh.getZMax()) / 2f;
+
+        glTranslatef(-cx, -cy, -cz);
+
         // Scéna
         if (showAxes) drawAxes();
         if (showGrid) drawXYGrid();
@@ -260,19 +267,6 @@ public class FunctionRenderer extends AbstractRenderer {
             }
             // Builduj mesh
             mesh.build(parser, xMin, xMax, yMin, yMax, steps, t);
-
-            // Vycentruj orbit — střed na středu funkce
-            float cx = (xMin + xMax) / 2f;
-            float cy = (yMin + yMax) / 2f;
-            float cz = 0f; // Osa Z na 0
-
-            if (meshDirty) {
-                camera.setPosition(new Vec3D(cx, cy, cz));
-            }
-
-            if (defaultPosition == null) {
-                defaultPosition = new transforms.Vec3D(cx, cy, cz);
-            }
 
             meshDirty = false;
         } catch (ParseException e) {
@@ -357,10 +351,11 @@ public class FunctionRenderer extends AbstractRenderer {
         glDisable(GL_LIGHTING);
         glLineWidth(1f);
 
-        // Střed a rozpětí os
-        float cx    = (xMin + xMax) / 2f;
-        float cy    = (yMin + yMax) / 2f;
-        float cz    = 0f; // Osa Z na 0
+        // Osy na 0,0,0
+        float cx = 0f;
+        float cy = 0f;
+        float cz = 0f;
+
         float span  = Math.max(xMax - xMin, yMax - yMin) * 0.65f;
         float zSpan = (mesh == null) ? span : (mesh.getZMax() - mesh.getZMin()) * 0.75f + 0.5f;
 
@@ -394,7 +389,8 @@ public class FunctionRenderer extends AbstractRenderer {
         glColor3f(0.28f, 0.28f, 0.38f); // Tmavě modrá
 
         // Z-pozice mřížky (pod povrchem)
-        float zGround = (mesh == null) ? 0f : mesh.getZMin() - 0.15f;
+        float zGround = - (mesh.getZMax() - mesh.getZMin()) / 2f - 0.15f;
+
         float stepX   = (xMax - xMin) / 10f;
         float stepY   = (yMax - yMin) / 10f;
 
