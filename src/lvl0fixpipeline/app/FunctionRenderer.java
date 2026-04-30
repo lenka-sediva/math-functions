@@ -194,7 +194,7 @@ public class FunctionRenderer extends AbstractRenderer {
         camera.setRadius(10.0);
         camera.setZenith  (Math.toRadians(25)); // Úhel od nahoře
         camera.setAzimuth (Math.toRadians(30)); // Azimutální úhel
-        
+
         // Uloží default hodnoty pro reset
         defaultRadius  = camera.getRadius();
         defaultZenith  = camera.getZenith();
@@ -269,6 +269,16 @@ public class FunctionRenderer extends AbstractRenderer {
             mesh.build(parser, xMin, xMax, yMin, yMax, steps, t);
 
             meshDirty = false;
+
+            // Vycentruje kameru na střed meshe (jen při prvním buildu nebo po Aplikovat změny)
+            float cx = (xMin + xMax) / 2f;
+            float cy = (yMin + yMax) / 2f;
+            float cz = (mesh.getZMin() + mesh.getZMax()) / 2f;
+
+            if (defaultPosition == null) {
+                defaultPosition = new Vec3D(cx, cy, cz);
+                camera.setPosition(defaultPosition);
+            }
         } catch (ParseException e) {
             System.err.println("[FuncViz] Parse error: " + e.getMessage());
         }
@@ -351,9 +361,9 @@ public class FunctionRenderer extends AbstractRenderer {
         glDisable(GL_LIGHTING);
         glLineWidth(1f);
 
-        // Osy na 0,0,0
-        float cx = 0f;
-        float cy = 0f;
+        // kreslí osy na střed meshe
+        float cx = (xMin + xMax) / 2f;
+        float cy = (yMin + yMax) / 2f;
         float cz = 0f;
 
         float span  = Math.max(xMax - xMin, yMax - yMin) * 0.65f;
