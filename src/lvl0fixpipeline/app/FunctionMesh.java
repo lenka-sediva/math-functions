@@ -90,7 +90,7 @@ public class FunctionMesh {
                 double x = xMin + (xMax - xMin) * ix / (N - 1);
                 int idx = iy * N + ix;
                 float fz = z[idx];
-                if (Float.isNaN(fz)) fz = 0f; // Fallback na 0 pro NaN
+                if (Float.isNaN(fz)) fz = Float.NaN; // NaN zůstane NaN (nevykreslí se) a zajistí, že se nebudou počítat normály
 
                 // Uloží pozici
                 vertices[idx * 3]     = (float) x;

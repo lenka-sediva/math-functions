@@ -373,6 +373,8 @@ public class ControlPanel extends JPanel {
         } catch (NumberFormatException e) {
             status("Neplatná číselná hodnota", true);
         }
+
+        renderer.resetCamera(true);
     }
 
     // Nastaví text a barvu status labelu

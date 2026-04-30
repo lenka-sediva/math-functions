@@ -470,7 +470,7 @@ public class FunctionRenderer extends AbstractRenderer {
     /**
      * Resetuje kameru na výchozí pozici
      */
-    private void resetCamera(boolean resetOrtho) {
+    public void resetCamera(boolean resetOrtho) {
         camera.setRadius(defaultRadius);
         camera.setZenith(defaultZenith);
         camera.setAzimuth(defaultAzimuth);
