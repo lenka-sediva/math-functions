@@ -1,0 +1,15 @@
+Math Functions 3D
+Copyright (c) 2026 Lenka Šedivá
+
+The MIT License in the LICENSE file applies to the original code of this
+project. It does NOT apply to the following course-provided code, which
+remains the property of its authors (PGRF, FIM UHK) and is included only
+for the purpose of this university project:
+
+  - src/transforms/
+  - src/lwjglutils/
+  - src/lvl0fixpipeline/global/AbstractRenderer.java
+
+Third-party libraries (downloaded by Maven, bundled in release builds):
+
+  - LWJGL 3 (https://www.lwjgl.org), BSD 3-Clause License

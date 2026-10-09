@@ -44,18 +44,43 @@ jobs:
             --dest target/dist
           Compress-Archive -Path target/dist/MathFunctions3D -DestinationPath target/MathFunctions3D-windows.zip
 
+      - name: Compute SHA-256 checksums
+        shell: pwsh
+        working-directory: target
+        run: |
+          Get-FileHash MathFunctions3D-windows.zip, math-functions-all.jar -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content SHA256SUMS.txt -Encoding ascii
+          Get-Content SHA256SUMS.txt
+
       - uses: actions/upload-artifact@v4
         with:
           name: MathFunctions3D
           path: |
             target/MathFunctions3D-windows.zip
             target/math-functions-all.jar
+            target/SHA256SUMS.txt
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          body: |
+            ## Download
+
+            - **Windows:** `MathFunctions3D-windows.zip`. Unzip it and run `MathFunctions3D.exe` (no Java needed).
+            - **Java 21+ on any OS:** `math-functions-all.jar`. Run it with `java -jar math-functions-all.jar`.
+
+            > **Windows SmartScreen warning:** the app is not code-signed (signing costs money), so Windows shows
+            > "Windows protected your PC" / "Unknown publisher" for new apps. Click **More info → Run anyway**.
+            > The full source code is in this repository and the files are built by GitHub Actions directly from it.
+
+            **Verify the download (optional):** compare the hash with `SHA256SUMS.txt`:
+            ```
+            certutil -hashfile MathFunctions3D-windows.zip SHA256
+            ```
           files: |
             target/MathFunctions3D-windows.zip
             target/math-functions-all.jar
+            target/SHA256SUMS.txt

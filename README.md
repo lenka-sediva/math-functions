@@ -8,6 +8,11 @@
 
 **[⬇ Download for Windows](https://github.com/lenka-sediva/math-functions/releases/latest)** (no installation and no Java needed)
 
+> **Windows may warn you:** "Windows protected your PC" / "Unknown publisher". This appears for every new app
+> that is not code-signed (signing costs money); it doesn't mean the app is harmful. Click **More info → Run anyway**.
+> The source code is fully open, and release files are [built automatically by GitHub Actions](https://github.com/lenka-sediva/math-functions/actions)
+> straight from this repository. [How to verify the download](#verify-the-download).
+
 ---
 
 ## Features
@@ -49,10 +54,18 @@
 3. If Windows SmartScreen shows a warning, click **More info → Run anyway**. The app is not code-signed.
 
 ### If you have Java 21+ installed
-Download `math-functions-all.jar` from the same release and run:
+Download `math-functions-all.jar` from the same release and run it (no SmartScreen warning):
 ```
 java -jar math-functions-all.jar
 ```
+
+### Verify the download
+Each release includes a `SHA256SUMS.txt` file. In the folder with the downloaded file, run:
+```
+certutil -hashfile MathFunctions3D-windows.zip SHA256
+```
+The result must match the line for that file in `SHA256SUMS.txt`. You can also upload the file to
+[VirusTotal](https://www.virustotal.com) to have it scanned by many antivirus engines.
 
 ### Build from source
 ```
@@ -84,4 +97,9 @@ Supported functions: `sin cos tan asin acos atan atan2 sinh cosh tanh sqrt cbrt 
 
 ---
 
-Created by **Lenka Šedivá** (2026). University project for computer graphics (PGRF, UHK). The `transforms` and `lwjglutils` packages are course-provided libraries.
+Created by **Lenka Šedivá** (2026). University project for computer graphics (PGRF, UHK).
+
+## License
+
+My code is released under the [MIT License](LICENSE). The course-provided code (the `transforms` and `lwjglutils` packages and `AbstractRenderer.java`)
+is **not** covered by this license and belongs to its authors (PGRF, FIM UHK). See [NOTICE](NOTICE) for details.
