@@ -74,7 +74,7 @@ java -jar target/math-functions-all.jar
 ```
 
 > Runs on **Windows 10/11**. The app overlays a GLFW window on a Swing window, and this technique is not supported on macOS or Wayland.
-> The user interface is in Czech. Formulas use standard math notation.
+> Formulas use standard math notation.
 
 ## Controls
 

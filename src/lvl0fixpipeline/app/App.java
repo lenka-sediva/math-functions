@@ -16,41 +16,41 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
 /**
- * HLAVNÍ APLIKACE — Swing okno s embeddovaným OpenGL renderem
+ * MAIN APPLICATION — Swing window with an embedded OpenGL renderer
  *
- * Struktura:
- * - Vlevo: OpenGL canvas (GLFW okno vložené do AWT)
- * - Vpravo: Swing ovládací panel pro parametry
+ * Layout:
+ * - Left: OpenGL canvas (GLFW window overlaid on the AWT window)
+ * - Right: Swing control panel for the parameters
  *
- * Technologie:
- * - GLFW okno běží v samostatném vlákně
- * - Synchronizace mezi Swing UI a GL vláknem přes volatile pole
- * - GLFW okno je bez dekorací a přesně se překrývá se Swing komponentou
- * - Na Windows je GLFW okno "vlastněné" Swing oknem → drží se nad ním,
- *   ale ne nad ostatními aplikacemi (jinde se použije GLFW_FLOATING)
+ * Technology:
+ * - The GLFW window runs in a separate thread
+ * - Swing UI and the GL thread are synchronized through volatile fields
+ * - The GLFW window has no decorations and exactly overlays a Swing component
+ * - On Windows the GLFW window is "owned" by the Swing window → it stays above it,
+ *   but not above other applications (elsewhere GLFW_FLOATING is used)
  */
 public class App extends JFrame {
-	// postranní panel
+	// side panel
 	private static final int PANEL_WIDTH  = 350;
-	// GL okno
+	// GL window
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 725;
-	// titulek hlavního okna (podle něj se na Windows dohledá jeho HWND)
-	private static final String TITLE     = "Vizualizace funkcí f(x,y)  —  LWJGL / OpenGL";
+	// main window title (used to look up its HWND on Windows)
+	private static final String TITLE     = "Function Visualizer f(x,y)  —  LWJGL / OpenGL";
 
 	private final FunctionRenderer renderer;
 	private GLThread     glThread;
-	private final JPanel       glPlaceholder; // Swing panel držící místo pro GL okno
+	private final JPanel       glPlaceholder; // Swing panel that reserves space for the GL window
 
 	/**
-	 * Vstupní bod aplikace — spustí App v EDT
+	 * Application entry point — starts App on the EDT
 	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(App::new);
 	}
 
 	/**
-	 * Konstruktor — vytvoří a inicializuje UI
+	 * Constructor — creates and initializes the UI
 	 */
 	public App() {
 		super(TITLE);
@@ -58,41 +58,41 @@ public class App extends JFrame {
 		setLayout(new BorderLayout());
 		getContentPane().setBackground(new Color(20, 20, 28));
 
-		// Vytvoří renderer (bude spuštěn později z GL vlákna)
+		// Create the renderer (started later from the GL thread)
 		renderer = new FunctionRenderer();
 
-		// Placeholder panel — do něho se překryje GLFW okno
+		// Placeholder panel — the GLFW window is overlaid on it
 		glPlaceholder = new JPanel();
 		glPlaceholder.setPreferredSize(new Dimension(GL_WIDTH, GL_HEIGHT));
 		glPlaceholder.setBackground(new Color(12, 12, 18));
 		glPlaceholder.setMinimumSize(new Dimension(400, 300));
 
-		// Ovládací panel vpravo
+		// Control panel on the right
 		ControlPanel controlPanel = new ControlPanel(renderer);
 		controlPanel.setPreferredSize(new Dimension(PANEL_WIDTH, GL_HEIGHT));
 
-		// SplitPane: vlevo GL, vpravo ovládání
+		// SplitPane: GL on the left, controls on the right
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				glPlaceholder, controlPanel);
 		split.setDividerLocation(GL_WIDTH);
 		split.setDividerSize(4);
 		split.setBackground(new Color(40, 40, 55));
 		split.setBorder(null);
-		split.setResizeWeight(1.0); // GL okno dostane přebytečný prostor při resizu
+		split.setResizeWeight(1.0); // the GL window gets the extra space on resize
 
 		add(split, BorderLayout.CENTER);
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
 
-		// Listener na zobrazení okna — spustí GL vlákno až po zjištění souřadnic
+		// Window shown listener — starts the GL thread once the coordinates are known
 		addComponentListener(new ComponentAdapter() {
 			boolean started = false;
 			@Override public void componentShown(ComponentEvent e)  { startGL(); }
 			@Override public void componentMoved(ComponentEvent e)  { syncGLWindow(); }
 			@Override public void componentResized(ComponentEvent e){ syncGLWindow(); }
 
-			/** Startuje GL vlákno jen jednou */
+			/** Starts the GL thread only once */
 			private void startGL() {
 				if (started) return;
 				started = true;
@@ -102,14 +102,14 @@ public class App extends JFrame {
 			}
 		});
 
-		// Listener na changes v GL placeholderu — synchronizuje pozici GL okna
+		// GL placeholder change listener — keeps the GL window position in sync
 		glPlaceholder.addComponentListener(new ComponentAdapter() {
 			@Override public void componentResized(ComponentEvent e){ syncGLWindow(); }
 		});
 
-		// Listener na zavření okna a minimalizaci
+		// Window close listener
 		addWindowListener(new WindowAdapter() {
-			/** Uživatel zavírá okno → zastaví GL vlákno */
+			/** The user is closing the window → stop the GL thread */
 			@Override public void windowClosing(WindowEvent e) {
 				if (glThread != null) glThread.requestStop();
 			}
@@ -117,29 +117,29 @@ public class App extends JFrame {
 	}
 
 	/**
-	 * Přesune a změní velikost GLFW okna, aby se přesně překrýval s glPlaceholder
-	 * (volá se z Swing EDT, požadavek se předá GL vláknu)
+	 * Moves and resizes the GLFW window so it exactly overlays glPlaceholder
+	 * (called from the Swing EDT, the request is handed over to the GL thread)
 	 */
 	void syncGLWindow() {
 		if (glThread == null || !glThread.isWindowCreated()) return;
 		Rectangle r = placeholderDeviceBounds();
-		// Předá požadavek GL vláknu (GLFW API není thread-safe)
+		// Hand the request over to the GL thread (the GLFW API is not thread-safe)
 		glThread.requestReposition(r.x, r.y, r.width, r.height);
 	}
 
 	/**
-	 * Vrátí pozici a velikost glPlaceholder ve fyzických pixelech obrazovky.
+	 * Returns the position and size of glPlaceholder in physical screen pixels.
 	 *
-	 * Swing pracuje v logických souřadnicích (při škálování Windows např. 125 %
-	 * jsou menší), GLFW ve fyzických pixelech → bez přepočtu by GL okno
-	 * skončilo posunuté doleva nahoru a bylo by menší.
+	 * Swing works in logical coordinates (smaller with Windows scaling, e.g. 125 %),
+	 * GLFW in physical pixels → without conversion the GL window would end up
+	 * shifted to the top left and smaller.
 	 */
 	private Rectangle placeholderDeviceBounds() {
 		Point loc = glPlaceholder.getLocationOnScreen();
 		GraphicsConfiguration gc = glPlaceholder.getGraphicsConfiguration();
 		if (gc == null) gc = getGraphicsConfiguration();
 		AffineTransform t = gc.getDefaultTransform();
-		Rectangle screen = gc.getBounds(); // počátek monitoru je už ve fyzických pixelech
+		Rectangle screen = gc.getBounds(); // the monitor origin is already in physical pixels
 		double sx = t.getScaleX(), sy = t.getScaleY();
 		int x = (int) Math.round(screen.x + (loc.x - screen.x) * sx);
 		int y = (int) Math.round(screen.y + (loc.y - screen.y) * sy);
@@ -149,11 +149,11 @@ public class App extends JFrame {
 	}
 
 	/**
-	 * Windows: nastaví Swing okno jako vlastníka (owner) GLFW okna.
-	 * Vlastněné okno je vždy nad vlastníkem, při minimalizaci se skryje s ním
-	 * a při přepnutí do jiné aplikace zůstane pod ní.
+	 * Windows: sets the Swing window as the owner of the GLFW window.
+	 * An owned window always stays above its owner, hides with it when minimized
+	 * and stays below other applications when the user switches to them.
 	 *
-	 * @return true, pokud se vlastníka podařilo nastavit
+	 * @return true if the owner was set successfully
 	 */
 	private static boolean setWin32Owner(long glfwWindow) {
 		long findWindowW = User32.getLibrary().getFunctionAddress("FindWindowW");
@@ -171,25 +171,25 @@ public class App extends JFrame {
 	}
 
 	/**
-	 * VNITŘNÍ VLÁKNO — běží GLFW event loop
+	 * INNER THREAD — runs the GLFW event loop
 	 *
-	 * Komunikace se Swing EDTem je synchronizovaná přes volatile pole
+	 * Communication with the Swing EDT is synchronized through volatile fields
 	 */
 	class GLThread extends Thread {
 		private volatile boolean stopRequested  = false;
 		private volatile boolean windowCreated  = false;
-		private volatile boolean pending = false; // čeká požadavek na přemístění?
-		private volatile int  pendingX, pendingY; // souřadnice mohou být záporné (monitor vlevo)
+		private volatile boolean pending = false; // is a reposition request waiting?
+		private volatile int  pendingX, pendingY; // coordinates can be negative (monitor on the left)
 		private volatile int  pendingW, pendingH;
 		private long window;
 
-		// Setter pro stopRequested
+		// Setter for stopRequested
 		void requestStop() { stopRequested = true; }
 
-		// Getter pro windowCreated
+		// Getter for windowCreated
 		boolean isWindowCreated() { return windowCreated; }
 
-		// Nastaví pending repositioning request
+		// Stores a pending reposition request
 		void requestReposition(int x, int y, int w, int h) {
 			pendingX = x; pendingY = y;
 			pendingW = w; pendingH = h;
@@ -198,76 +198,76 @@ public class App extends JFrame {
 
 		@Override
 		public void run() {
-			// Inicializace GLFW
+			// GLFW initialization
 			if (!glfwInit()) throw new RuntimeException("Cannot init GLFW");
 
-			// Nastavení hints pro nové okno
+			// Window hints for the new window
 			glfwDefaultWindowHints();
-			glfwWindowHint(GLFW_VISIBLE,       GLFW_FALSE); // zobrazí se až po umístění
-			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // velikost řídíme sami ze Swingu
-			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // bez titulku a rámu
-			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE); // nezískává focus automaticky
+			glfwWindowHint(GLFW_VISIBLE,       GLFW_FALSE); // shown only after it is positioned
+			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // the size is controlled from Swing
+			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // no title bar or border
+			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE); // does not take focus automatically
 
-			// Zjistí počáteční pozici a velikost z placeholderu (fyzické pixely)
+			// Initial position and size from the placeholder (physical pixels)
 			Rectangle r = placeholderDeviceBounds();
 
-			// Vytvoří GLFW okno
+			// Create the GLFW window
 			window = glfwCreateWindow(
 					Math.max(r.width, 100), Math.max(r.height, 100),
 					"GL", 0L, 0L);
 			if (window == 0L) throw new RuntimeException("Cannot create GLFW window");
 
-			// Udrží GL okno nad Swing oknem: na Windows přes vlastníka,
-			// jinde (nebo když se vlastníka nepodaří najít) jako "floating"
+			// Keep the GL window above the Swing window: via the owner on Windows,
+			// elsewhere (or if the owner cannot be found) as "floating"
 			boolean owned = Platform.get() == Platform.WINDOWS && setWin32Owner(window);
 			if (!owned) glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_TRUE);
 
-			// Umístí okno na správné místo a teprve pak ho zobrazí
+			// Move the window into place and only then show it
 			glfwSetWindowPos(window, r.x, r.y);
 			glfwShowWindow(window);
 
-			// Callbacky
+			// Callbacks
 			glfwSetKeyCallback        (window, renderer.getGlfwKeyCallback());
 			glfwSetWindowSizeCallback (window, renderer.getGlfwWindowSizeCallback());
 			glfwSetMouseButtonCallback(window, renderer.getGlfwMouseButtonCallback());
 			glfwSetCursorPosCallback  (window, renderer.getGlfwCursorPosCallback());
 			glfwSetScrollCallback     (window, renderer.getGlfwScrollCallback());
 
-			// Listener na klik v placeholderu — dostane focus GL okno
+			// Click in the placeholder → the GL window gets focus
 			glPlaceholder.addMouseListener(new MouseAdapter() {
 				@Override public void mousePressed(MouseEvent e) {
 					glfwFocusWindow(window);
 				}
 			});
 
-			// Inicializace OpenGL
+			// OpenGL initialization
 			glfwMakeContextCurrent(window);
 			glfwSwapInterval(1); // vsync ON
-			GL.createCapabilities(); // načte OpenGL function pointery
+			GL.createCapabilities(); // loads the OpenGL function pointers
 
-			renderer.init(); // inicializuje renderer (nastavení osvětlení, kamery atd.)
-			windowCreated = true; // signál pro Swing, že okno je připraveno
-			syncGLWindow(); // počáteční synchronizace pozice
+			renderer.init(); // initializes the renderer (lighting, camera, etc.)
+			windowCreated = true; // signals to Swing that the window is ready
+			syncGLWindow(); // initial position sync
 
-			// Hlavní loop
+			// Main loop
 			while (!stopRequested && !glfwWindowShouldClose(window)) {
-				// Zpracuje čekající přemístění/resize ze Swingu
+				// Apply a pending move/resize from Swing
 				if (pending) {
 					pending = false;
 					glfwSetWindowPos (window, pendingX, pendingY);
 					glfwSetWindowSize(window, Math.max(pendingW, 100), Math.max(pendingH, 100));
-					// Informuje renderer o nové velikosti
+					// Tell the renderer about the new size
 					renderer.setWidth(Math.max(pendingW, 100));
 					renderer.setHeight(Math.max(pendingH, 100));
 				}
 
-				// Hlavní renderovací volání
+				// Main render call
 				renderer.display();
 				glfwSwapBuffers(window);
-				glfwPollEvents(); // zpracuje keyboard, mouse atd.
+				glfwPollEvents(); // processes keyboard, mouse, etc.
 			}
 
-			// Ukončení a úklid
+			// Shutdown and cleanup
 			renderer.dispose();
 			glfwDestroyWindow(window);
 			glfwTerminate();

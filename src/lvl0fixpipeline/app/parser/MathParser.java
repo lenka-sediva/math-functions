@@ -5,63 +5,63 @@ import lvl0fixpipeline.app.ShuntingYard;
 import java.util.List;
 
 /**
- * HIGH-LEVEL PARSER — Zkompiluje výraz jednou, vyhodnocuje ho mnohokrát efektivně
- * 
- * Architektura:
- * 1. compile() — Tokenizuje a konvertuje na postfix (RPN) jednou
- * 2. evaluate() — Efektivně vyhodnocuje postfixový výraz
- * 
- * Používá se pro f(x, y, t) kde se x a y mění v každém pixelu,
- * ale výraz je stejný — takže parsing se dělá jen jednou
+ * HIGH-LEVEL PARSER — Compiles an expression once, evaluates it efficiently many times
+ *
+ * Architecture:
+ * 1. compile() — Tokenizes and converts to postfix (RPN) once
+ * 2. evaluate() — Evaluates the postfix expression efficiently
+ *
+ * Used for f(x, y, t) where x and y change at every grid point,
+ * but the expression stays the same — so parsing is done only once
  */
 public class MathParser {
-    private final Tokenizer tokenizer = new Tokenizer(); // přesměruje string na seznam tokenů
-    private final ShuntingYard shuntingYard = new ShuntingYard(); // konvert infix => postfix
-    private List<Token> postfix; // postfixový seznam tokenů
-    private String expression; // původní výraz (pro UI a debug)
+    private final Tokenizer tokenizer = new Tokenizer(); // turns the string into a list of tokens
+    private final ShuntingYard shuntingYard = new ShuntingYard(); // converts infix => postfix
+    private List<Token> postfix; // postfix token list
+    private String expression; // original expression (for the UI and debugging)
 
     /**
-     * Konstruktor — okamžitě parsuje výraz
+     * Constructor — parses the expression immediately
      */
     public MathParser(String expression) throws ParseException {
         compile(expression);
     }
 
     /**
-     * Kompiluje výraz — tokenizace + konverze na postfix
+     * Compiles the expression — tokenization + conversion to postfix
      */
     public void compile(String expression) throws ParseException {
         this.expression = expression;
-        List<Token> tokens = tokenizer.tokenize(expression); // tokenizace — převod stringu na seznam tokenů
-        this.postfix = shuntingYard.toPostfix(tokens); // konvert na postfix
-        // validace
+        List<Token> tokens = tokenizer.tokenize(expression); // tokenization — turn the string into a list of tokens
+        this.postfix = shuntingYard.toPostfix(tokens); // convert to postfix
+        // validation
         if (this.postfix.isEmpty()) {
             throw new ParseException("Empty expression");
         }
     }
 
     /**
-     * Vyhodnotí f(x, y) pro t=0
+     * Evaluates f(x, y) for t=0
      */
     public double evaluate(double x, double y) throws ParseException {
         return evaluate(x, y, 0.0);
     }
 
     /**
-     * Vyhodnotí f(x, y, t) — animovaná verze
+     * Evaluates f(x, y, t) — animated version
      */
     public double evaluate(double x, double y, double t) throws ParseException {
         return shuntingYard.evaluate(postfix, x, y, t);
     }
 
     /**
-     * BEZPEČNÉ vyhodnocení — vrací NaN místo vyhazování výjimky
-     * Používá se pro vzorkování funkce (aby nedošlo k pádu na matematické chyby)
+     * SAFE evaluation — returns NaN instead of throwing an exception
+     * Used for sampling the function (so math errors don't cause a crash)
      */
     public double evaluateSafe(double x, double y, double t) {
         try {
             double result = evaluate(x, y, t);
-            // zkontroluje, že výsledek je validní číslo
+            // check that the result is a valid number
             return Double.isFinite(result) ? result : Double.NaN;
         } catch (ParseException e) {
             return Double.NaN;
@@ -69,15 +69,15 @@ public class MathParser {
     }
 
     /**
-     * Vrátí původní výraz (pro UI)
+     * Returns the original expression (for the UI)
      */
     public String getExpression() {
         return expression;
     }
 
     /**
-     * Zkontroluje, jestli výraz obsahuje proměnnou t (animace)
-     * @return true pokud výraz obsahuje t, false jinak
+     * Checks whether the expression contains the variable t (animation)
+     * @return true if the expression contains t, false otherwise
      */
     public boolean containsTimeVariable() {
         for (Token token : postfix) {
