@@ -1,9 +1,9 @@
-# Math Functions 3D
+# 3D Math Functions
 
 **Type in a math formula and see it as an interactive 3D surface that you can rotate, zoom and animate.**
 
 <p>
-  <img src="docs/images/app-window.png" width="49%" alt="Application window with control panel">
+  <img src="docs/images/app-window.png" width="100%" alt="Application window with control panel">
 </p>
 
 **[⬇ Download for Windows](https://github.com/lenka-sediva/math-functions/releases/latest)** (no installation and no Java needed)
@@ -20,7 +20,6 @@
 - **Display modes**: lit surface with a height-based color gradient, wireframe, surface normals, axes, grid
 - **Adjustable detail**: 10–300 grid steps and a custom X/Y range
 - **Input validation**: clear error messages for invalid formulas or ranges
-- **One-key screenshots** (F12)
 
 ## Tech Stack
 
@@ -79,7 +78,6 @@ java -jar target/math-functions-all.jar
 | `M`                   | Toggle wireframe                    |
 | `N`                   | Show surface normals                |
 | `O` / `K`             | Toggle axes / grid                  |
-| `F12`                 | Save screenshot to `docs/images/`   |
 | `Esc`                 | Quit                                |
 
 Supported functions: `sin cos tan asin acos atan atan2 sinh cosh tanh sqrt cbrt exp log log10 log2 abs floor ceil round sign pow min max`. Constants: `pi`, `e`. Operators: `+ - * / ^ %`.
