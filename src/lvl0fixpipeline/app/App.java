@@ -1,12 +1,19 @@
 package lvl0fixpipeline.app;
 
+import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.JNI;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Platform;
+import org.lwjgl.system.windows.User32;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 /**
  * HLAVNÍ APLIKACE — Swing okno s embeddovaným OpenGL renderem
@@ -18,7 +25,9 @@ import static org.lwjgl.glfw.GLFW.*;
  * Technologie:
  * - GLFW okno běží v samostatném vlákně
  * - Synchronizace mezi Swing UI a GL vláknem přes volatile pole
- * - GLFW okno je "floating" bez dekorací a přesně se překrývá se Swing komponentou
+ * - GLFW okno je bez dekorací a přesně se překrývá se Swing komponentou
+ * - Na Windows je GLFW okno "vlastněné" Swing oknem → drží se nad ním,
+ *   ale ne nad ostatními aplikacemi (jinde se použije GLFW_FLOATING)
  */
 public class App extends JFrame {
 	// postranní panel
@@ -26,6 +35,8 @@ public class App extends JFrame {
 	// GL okno
 	private static final int GL_WIDTH     = 900;
 	private static final int GL_HEIGHT    = 725;
+	// titulek hlavního okna (podle něj se na Windows dohledá jeho HWND)
+	private static final String TITLE     = "Vizualizace funkcí f(x,y)  —  LWJGL / OpenGL";
 
 	private final FunctionRenderer renderer;
 	private GLThread     glThread;
@@ -42,7 +53,7 @@ public class App extends JFrame {
 	 * Konstruktor — vytvoří a inicializuje UI
 	 */
 	public App() {
-		super("Vizualizace funkcí f(x,y)  —  LWJGL / OpenGL");
+		super(TITLE);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
 		getContentPane().setBackground(new Color(20, 20, 28));
@@ -111,11 +122,52 @@ public class App extends JFrame {
 	 */
 	void syncGLWindow() {
 		if (glThread == null || !glThread.isWindowCreated()) return;
-		Point loc = glPlaceholder.getLocationOnScreen();
-		int   w   = glPlaceholder.getWidth();
-		int   h   = glPlaceholder.getHeight();
+		Rectangle r = placeholderDeviceBounds();
 		// Předá požadavek GL vláknu (GLFW API není thread-safe)
-		glThread.requestReposition(loc.x, loc.y, w, h);
+		glThread.requestReposition(r.x, r.y, r.width, r.height);
+	}
+
+	/**
+	 * Vrátí pozici a velikost glPlaceholder ve fyzických pixelech obrazovky.
+	 *
+	 * Swing pracuje v logických souřadnicích (při škálování Windows např. 125 %
+	 * jsou menší), GLFW ve fyzických pixelech → bez přepočtu by GL okno
+	 * skončilo posunuté doleva nahoru a bylo by menší.
+	 */
+	private Rectangle placeholderDeviceBounds() {
+		Point loc = glPlaceholder.getLocationOnScreen();
+		GraphicsConfiguration gc = glPlaceholder.getGraphicsConfiguration();
+		if (gc == null) gc = getGraphicsConfiguration();
+		AffineTransform t = gc.getDefaultTransform();
+		Rectangle screen = gc.getBounds(); // počátek monitoru je už ve fyzických pixelech
+		double sx = t.getScaleX(), sy = t.getScaleY();
+		int x = (int) Math.round(screen.x + (loc.x - screen.x) * sx);
+		int y = (int) Math.round(screen.y + (loc.y - screen.y) * sy);
+		int w = (int) Math.round(glPlaceholder.getWidth()  * sx);
+		int h = (int) Math.round(glPlaceholder.getHeight() * sy);
+		return new Rectangle(x, y, w, h);
+	}
+
+	/**
+	 * Windows: nastaví Swing okno jako vlastníka (owner) GLFW okna.
+	 * Vlastněné okno je vždy nad vlastníkem, při minimalizaci se skryje s ním
+	 * a při přepnutí do jiné aplikace zůstane pod ní.
+	 *
+	 * @return true, pokud se vlastníka podařilo nastavit
+	 */
+	private static boolean setWin32Owner(long glfwWindow) {
+		long findWindowW = User32.getLibrary().getFunctionAddress("FindWindowW");
+		if (findWindowW == 0L) return false;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			long owner = JNI.callPPP(
+					memAddress(stack.UTF16("SunAwtFrame")),
+					memAddress(stack.UTF16(TITLE)),
+					findWindowW);
+			if (owner == 0L) return false;
+			long hwnd = GLFWNativeWin32.glfwGetWin32Window(glfwWindow);
+			User32.SetWindowLongPtr(null, hwnd, User32.GWL_HWNDPARENT, owner);
+			return true;
+		}
 	}
 
 	/**
@@ -126,8 +178,9 @@ public class App extends JFrame {
 	class GLThread extends Thread {
 		private volatile boolean stopRequested  = false;
 		private volatile boolean windowCreated  = false;
-		private volatile int  pendingX = -1, pendingY = -1; // -1 = žádný požadavek
-		private volatile int  pendingW = -1, pendingH = -1;
+		private volatile boolean pending = false; // čeká požadavek na přemístění?
+		private volatile int  pendingX, pendingY; // souřadnice mohou být záporné (monitor vlevo)
+		private volatile int  pendingW, pendingH;
 		private long window;
 
 		// Setter pro stopRequested
@@ -140,6 +193,7 @@ public class App extends JFrame {
 		void requestReposition(int x, int y, int w, int h) {
 			pendingX = x; pendingY = y;
 			pendingW = w; pendingH = h;
+			pending = true;
 		}
 
 		@Override
@@ -149,25 +203,28 @@ public class App extends JFrame {
 
 			// Nastavení hints pro nové okno
 			glfwDefaultWindowHints();
-			glfwWindowHint(GLFW_VISIBLE,       GLFW_TRUE);
+			glfwWindowHint(GLFW_VISIBLE,       GLFW_FALSE); // zobrazí se až po umístění
 			glfwWindowHint(GLFW_RESIZABLE,     GLFW_FALSE); // velikost řídíme sami ze Swingu
 			glfwWindowHint(GLFW_DECORATED,     GLFW_FALSE); // bez titulku a rámu
 			glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE); // nezískává focus automaticky
-			glfwWindowHint(GLFW_FLOATING,      GLFW_TRUE);  // zůstane nad Swing oknem
 
-			// Zjistí počáteční pozici a velikost z placeholderu
-			Point loc = glPlaceholder.getLocationOnScreen();
-			int   w   = glPlaceholder.getWidth();
-			int   h   = glPlaceholder.getHeight();
+			// Zjistí počáteční pozici a velikost z placeholderu (fyzické pixely)
+			Rectangle r = placeholderDeviceBounds();
 
 			// Vytvoří GLFW okno
 			window = glfwCreateWindow(
-					Math.max(w, 100), Math.max(h, 100),
+					Math.max(r.width, 100), Math.max(r.height, 100),
 					"GL", 0L, 0L);
 			if (window == 0L) throw new RuntimeException("Cannot create GLFW window");
 
-			// Umístí okno na správné místo
-			glfwSetWindowPos(window, loc.x, loc.y);
+			// Udrží GL okno nad Swing oknem: na Windows přes vlastníka,
+			// jinde (nebo když se vlastníka nepodaří najít) jako "floating"
+			boolean owned = Platform.get() == Platform.WINDOWS && setWin32Owner(window);
+			if (!owned) glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_TRUE);
+
+			// Umístí okno na správné místo a teprve pak ho zobrazí
+			glfwSetWindowPos(window, r.x, r.y);
+			glfwShowWindow(window);
 
 			// Callbacky
 			glfwSetKeyCallback        (window, renderer.getGlfwKeyCallback());
@@ -195,13 +252,13 @@ public class App extends JFrame {
 			// Hlavní loop
 			while (!stopRequested && !glfwWindowShouldClose(window)) {
 				// Zpracuje čekající přemístění/resize ze Swingu
-				if (pendingX >= 0) {
+				if (pending) {
+					pending = false;
 					glfwSetWindowPos (window, pendingX, pendingY);
 					glfwSetWindowSize(window, Math.max(pendingW, 100), Math.max(pendingH, 100));
 					// Informuje renderer o nové velikosti
 					renderer.setWidth(Math.max(pendingW, 100));
 					renderer.setHeight(Math.max(pendingH, 100));
-					pendingX = -1;
 				}
 
 				// Hlavní renderovací volání
