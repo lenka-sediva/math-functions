@@ -9,23 +9,23 @@ import java.awt.*;
 import java.awt.event.*;
 
 /**
- * OVLÁDACÍ PANEL — Swing UI pro vizualizér
- * 
- * Komponenty:
- * - Textové pole pro zadání výrazu f(x,y,t)
- * - Dropdown se předvoleným funkcemi
- * - Pole pro X/Y rozsahy
- * - Spinner pro počet vzorkování
- * - Checkbox a slider pro animaci
- * - Status řádka
- * - Tlačítko "O projektu"
- * 
- * Veškeré změny se aplikují na FunctionRenderer přes applySettings()
+ * CONTROL PANEL — Swing UI for the visualizer
+ *
+ * Components:
+ * - Text field for the expression f(x,y,t)
+ * - Dropdown with preset functions
+ * - Fields for the X/Y ranges
+ * - Spinner for the number of samples
+ * - Checkbox and slider for the animation
+ * - Status line
+ * - "About" button
+ *
+ * All changes are applied to the FunctionRenderer via applySettings()
  */
 public class ControlPanel extends JPanel {
-    private final FunctionRenderer renderer; // reference na renderer, pro předávání nastavení
+    private final FunctionRenderer renderer; // renderer reference, used to pass the settings
 
-    // UI komponenty
+    // UI components
     private JTextField tfExpr;
     private JTextField tfXMin, tfXMax;
     private JTextField tfYMin, tfYMax;
@@ -34,18 +34,18 @@ public class ControlPanel extends JPanel {
     private JCheckBox  cbAnimate;
     private JSlider    sliderAnimSpeed;
 
-    // Přednastavené funkce
+    // Preset functions
     private static final String[][] PRESETS = {
             {"Sinc",              "sin(sqrt(x*x+y*y)) / (sqrt(x*x+y*y)+0.01)"},
-            {"Sedlo",             "x*x - y*y"},
+            {"Saddle",            "x*x - y*y"},
             {"sin·cos",           "sin(x) * cos(y)"},
-            {"Kužel",             "sqrt(x*x+y*y)"},
-            {"Vlnění",            "sin(x*x+y*y)"},
-            {"Mexický klobouk",   "(1-(x*x+y*y)/4)*exp(-(x*x+y*y)/4)"},
-            {"Vlna+čas",          "sin(x+t)*cos(y+t)"},
+            {"Cone",              "sqrt(x*x+y*y)"},
+            {"Ripple",            "sin(x*x+y*y)"},
+            {"Mexican hat",       "(1-(x*x+y*y)/4)*exp(-(x*x+y*y)/4)"},
+            {"Wave+time",         "sin(x+t)*cos(y+t)"},
             {"Manta",             "sin(x)+cos(y)+sin(x*y)"},
-            {"Spirála",           "sin(atan2(y,x)*3+sqrt(x*x+y*y)-t*2)"},
-            {"Hvězda",            "sqrt(x*x+y*y)+3*cos(sqrt(x*x+y*y))-3.9"},
+            {"Spiral",            "sin(atan2(y,x)*3+sqrt(x*x+y*y)-t*2)"},
+            {"Star",              "sqrt(x*x+y*y)+3*cos(sqrt(x*x+y*y))-3.9"},
     };
 
     public ControlPanel(FunctionRenderer renderer) {
@@ -55,7 +55,7 @@ public class ControlPanel extends JPanel {
         setBackground(BG);
         setBorder(new EmptyBorder(0, 0, 0, 0));
 
-        // ScrollPane s vnitřním obsahem + spodní bar s tlačítkem
+        // ScrollPane with the inner content + bottom bar with a button
         JScrollPane scroll = new JScrollPane(buildInner());
         scroll.setBorder(null);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -65,7 +65,7 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * Vytvoří spodní lištu s tlačítkem "O projektu" a legendou barev pro osy
+     * Creates the bottom bar with the "About" button and the axis color legend
      */
     private JComponent buildBottomBar() {
         JPanel bottom = new JPanel(new BorderLayout());
@@ -73,21 +73,21 @@ public class ControlPanel extends JPanel {
         bottom.setBorder(new MatteBorder(1, 0, 0, 0, BORDER));
         bottom.setPreferredSize(new Dimension(0, 36));
 
-        // Legenda os — vlevo
+        // Axis legend — left
         JPanel legend = new JPanel();
         legend.setLayout(new BoxLayout(legend, BoxLayout.X_AXIS));
         legend.setOpaque(false);
         legend.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 
-        JLabel lx = new JLabel("■ X = osa X");
+        JLabel lx = new JLabel("■ X = X axis");
         lx.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lx.setForeground(new Color(255, 64, 64));
 
-        JLabel ly = new JLabel("■ Y = osa Y");
+        JLabel ly = new JLabel("■ Y = Y axis");
         ly.setFont(new Font("Segoe UI", Font.BOLD, 12));
         ly.setForeground(new Color(64, 255, 64));
 
-        JLabel lz = new JLabel("■ Z = osa Z");
+        JLabel lz = new JLabel("■ Z = Z axis");
         lz.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lz.setForeground(new Color(90, 140, 255));
 
@@ -97,13 +97,13 @@ public class ControlPanel extends JPanel {
         legend.add(Box.createRigidArea(new Dimension(8, 0)));
         legend.add(lz);
 
-        // Tlačítko O projektu — vpravo
+        // About button — right
         JPanel right = new JPanel();
         right.setLayout(new BoxLayout(right, BoxLayout.X_AXIS));
         right.setOpaque(false);
         right.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 
-        JButton btnInfo = new JButton("O projektu");
+        JButton btnInfo = new JButton("About");
         btnInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnInfo.setFocusPainted(false);
         btnInfo.setBackground(INPUT);
@@ -120,27 +120,27 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * Zobrazí informační dialog o projektu
+     * Shows the About dialog
      */
     private void showInfoDialog() {
         JOptionPane pane = new JOptionPane(
                 """
-                Autorka: Lenka Šedivá
-                Projekt: 3D vizualizace matematických funkcí
-                Rok: 2026
-                
-                Aplikace umožňuje vykreslovat uživatelem zadané
-                funkce f(x, y, t) pomocí OpenGL (LWJGL)
+                Author: Lenka Šedivá
+                Project: 3D visualization of math functions
+                Year: 2026
+
+                The application renders user-defined
+                functions f(x, y, t) using OpenGL (LWJGL)
                 """,
                 JOptionPane.INFORMATION_MESSAGE
         );
-        JDialog dialog = pane.createDialog(SwingUtilities.getWindowAncestor(this), "O projektu");
+        JDialog dialog = pane.createDialog(SwingUtilities.getWindowAncestor(this), "About");
         dialog.setAlwaysOnTop(true);
         dialog.setVisible(true);
     }
 
     /**
-     * Vytvoří vnitřek panelu se všemi ovládacími prvky
+     * Creates the inner panel with all the controls
      */
     private JPanel buildInner() {
         JPanel root = new JPanel();
@@ -148,28 +148,28 @@ public class ControlPanel extends JPanel {
         root.setBackground(BG);
         root.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        // Nadpis
-        JLabel title = new JLabel("Předpis funkce f(x, y, t)");
+        // Title
+        JLabel title = new JLabel("Function f(x, y, t)");
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         title.setForeground(new Color(130, 180, 255));
         title.setAlignmentX(LEFT_ALIGNMENT);
         title.setBorder(new EmptyBorder(0, 0, 10, 0));
         root.add(title);
 
-        // Textové pole pro výraz
+        // Text field for the expression
         tfExpr = monoField(renderer.getExpression(), 22);
         root.add(tfExpr);
         root.add(vgap(4));
 
-        // Předvolby
-        root.add(sectionLabel("Předvolby"));
+        // Presets
+        root.add(sectionLabel("Presets"));
         String[] names = new String[PRESETS.length + 1];
-        names[0] = "— vyberte —";
+        names[0] = "— select —";
         for (int i = 0; i < PRESETS.length; i++) names[i+1] = PRESETS[i][0];
         JComboBox<String> cbPresets = new JComboBox<>(names);
         styleCombo(cbPresets);
 
-        // Když uživatel vybere z dropdown → dá to výraz do textového pole
+        // When the user picks a preset → put its expression into the text field
         cbPresets.addActionListener(e -> {
             int s = cbPresets.getSelectedIndex();
             if (s > 0) tfExpr.setText(PRESETS[s-1][1]);
@@ -177,8 +177,8 @@ public class ControlPanel extends JPanel {
         root.add(cbPresets);
         root.add(vgap(10));
 
-        // Rozsahy os
-        root.add(sectionLabel("Rozsah os X / Y"));
+        // Axis ranges
+        root.add(sectionLabel("X / Y axis range"));
         JPanel rangeGrid = new JPanel(new GridLayout(3, 2, 6, 5));
         rangeGrid.setOpaque(false);
         rangeGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
@@ -190,7 +190,7 @@ public class ControlPanel extends JPanel {
         rangeGrid.add(smallLabel("Y min")); rangeGrid.add(smallLabel("Y max"));
         root.add(rangeGrid);
 
-        // Druhý řádek gridů pro Y
+        // Second grid row for Y
         JPanel rangeGrid2 = new JPanel(new GridLayout(1, 2, 6, 5));
         rangeGrid2.setOpaque(false);
         rangeGrid2.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
@@ -201,48 +201,48 @@ public class ControlPanel extends JPanel {
         root.add(rangeGrid2);
         root.add(vgap(10));
 
-        // Vzorkování
-        root.add(sectionLabel("Vzorkování (kroků)"));
+        // Sampling
+        root.add(sectionLabel("Sampling (steps)"));
 
         JPanel stepsRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         stepsRow.setOpaque(false);
         stepsRow.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Spinner s počtem kroků
+        // Spinner with the number of steps
         SpinnerNumberModel sm = new SpinnerNumberModel(renderer.getSteps(), 10, 300, 10);
         spinSteps = new JSpinner(sm);
         spinSteps.setPreferredSize(new Dimension(80, 28));
         styleSpinner(spinSteps);
 
-        // Tlačítko "Aplikovat změny"
-        JButton btnApply = accentButtonSmall("Aplikovat změny");
+        // "Apply changes" button
+        JButton btnApply = accentButtonSmall("Apply changes");
         btnApply.addActionListener(e -> applySettings());
 
-        // Přidá spinner a tlačítko do jednoho řádku
+        // Put the spinner and the button on one row
         stepsRow.add(spinSteps);
-        stepsRow.add(Box.createRigidArea(new Dimension(8, 0))); // mezera mezi
+        stepsRow.add(Box.createRigidArea(new Dimension(8, 0))); // gap between
         stepsRow.add(btnApply);
         root.add(stepsRow);
         root.add(vgap(12));
 
-        // Animace
-        root.add(sectionLabel("Animace  (proměnná t)"));
+        // Animation
+        root.add(sectionLabel("Animation  (variable t)"));
 
         JPanel animRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         animRow.setOpaque(false);
         animRow.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Checkbox "Zapnout"
-        cbAnimate = new JCheckBox("Zapnout");
+        // "Enable" checkbox
+        cbAnimate = new JCheckBox("Enable");
         cbAnimate.setForeground(FG);
         cbAnimate.setBackground(BG);
         cbAnimate.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
         animRow.add(cbAnimate);
-        animRow.add(Box.createRigidArea(new Dimension(8, 0))); // mezera mezi
-        animRow.add(smallLabel("Rychlost:"));
+        animRow.add(Box.createRigidArea(new Dimension(8, 0))); // gap between
+        animRow.add(smallLabel("Speed:"));
 
-        // Slider pro rychlost (1-20)
+        // Speed slider (1-20)
         sliderAnimSpeed = new JSlider(1, 20, 5);
         sliderAnimSpeed.setPreferredSize(new Dimension(90, 25));
         sliderAnimSpeed.setOpaque(false);
@@ -250,13 +250,13 @@ public class ControlPanel extends JPanel {
         animRow.add(sliderAnimSpeed);
         root.add(animRow);
 
-        // Listener na checkbox — kontroluje přítomnost 't' a zapne/vypne animaci
+        // Checkbox listener — checks that 't' is present and turns the animation on/off
         cbAnimate.addActionListener(e -> {
             if (cbAnimate.isSelected()) {
-                // Kontrola přítomnosti parametru 't'
+                // Check that the parameter 't' is present
                 String expr = tfExpr.getText().trim();
                 if (expr.isEmpty()) {
-                    status("Chyba: Nejdřív zadejte výraz", true);
+                    status("Error: enter an expression first", true);
                     cbAnimate.setSelected(false);
                     return;
                 }
@@ -266,29 +266,29 @@ public class ControlPanel extends JPanel {
                     boolean hasTimeVariable = parser.containsTimeVariable();
 
                     if (!hasTimeVariable) {
-                        status("Chyba: Parametr 't' není v předpisu", true);
+                        status("Error: the expression does not contain 't'", true);
                         cbAnimate.setSelected(false);
                         return;
                     }
 
-                    // OK — je t v předpisu
-                    status("Animace zapnutá — " + expr, false);
+                    // OK — the expression contains t
+                    status("Animation on — " + expr, false);
                 } catch (ParseException pe) {
-                    status("Chyba: " + pe.getMessage(), true);
+                    status("Error: " + pe.getMessage(), true);
                     cbAnimate.setSelected(false);
                     return;
                 }
             } else {
-                // Animace vypnutá
-                status("Animace vypnutá", false);
+                // Animation off
+                status("Animation off", false);
             }
 
-            // Nakonec aplikuj nastavení
+            // Finally apply the settings
             renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f);
         });
         root.add(vgap(5));
 
-        // Oddělovač
+        // Separator
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(60, 60, 80));
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
@@ -296,29 +296,29 @@ public class ControlPanel extends JPanel {
         root.add(sep);
         root.add(vgap(5));
 
-        // Klávesové zkratky
-        // Sekce 1 — Ovládání kamery
-        root.add(sectionLabel("Ovládání kamery"));
+        // Keyboard shortcuts
+        // Section 1 — Camera controls
+        root.add(sectionLabel("Camera controls"));
         for (String hint : new String[]{
-                "Levá myš — rotace kamery",
-                "Pravá myš — posun kamery",
-                "Kolečko — zoom",
-                "W/S/A/D — pohyb kamery",
-                "Q/E — rozhlížení kamery",
-                "R — reset kamery",
-                "XYZ — pohledy z os",
-                "P — přepnutí pohledu ortho/perspektiva"
+                "Left mouse — rotate camera",
+                "Right mouse — pan camera",
+                "Mouse wheel — zoom",
+                "W/S/A/D — move camera",
+                "Q/E — turn camera",
+                "R — reset camera",
+                "XYZ — views from the axes",
+                "P — toggle ortho/perspective"
         }) {
             root.add(hintLabel(hint));
         }
 
-        // Sekce 2 — Zobrazení
-        root.add(sectionLabel("Zobrazení"));
+        // Section 2 — Display
+        root.add(sectionLabel("Display"));
         for (String hint : new String[]{
-                "M — drátový model",
-                "N — normály povrchu",
-                "O — souřadnicové osy",
-                "K — podkladová mřížka"
+                "M — wireframe",
+                "N — surface normals",
+                "O — coordinate axes",
+                "K — ground grid"
         }) {
             root.add(hintLabel(hint));
         }
@@ -326,7 +326,7 @@ public class ControlPanel extends JPanel {
         root.add(vgap(5));
 
         // Status
-        lblStatus = new JLabel("Připraveno.");
+        lblStatus = new JLabel("Ready.");
         lblStatus.setFont(new Font("Monospaced", Font.PLAIN, 11));
         lblStatus.setForeground(new Color(100, 200, 130));
         lblStatus.setAlignmentX(LEFT_ALIGNMENT);
@@ -336,67 +336,67 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * APLIKUJE VŠECHNY ZMĚNY — validuje input a pošle do rendereru
+     * APPLIES ALL CHANGES — validates the input and sends it to the renderer
      */
     private void applySettings() {
         try {
-            // Ověří výraz
+            // Check the expression
             String expr = tfExpr.getText().trim();
-            if (expr.isEmpty()) { status("Chyba: prázdný výraz", true); return; }
+            if (expr.isEmpty()) { status("Error: empty expression", true); return; }
 
-            // Parsuje číselné hodnoty
+            // Parse the numeric values
             float x0 = Float.parseFloat(tfXMin.getText().trim());
             float x1 = Float.parseFloat(tfXMax.getText().trim());
             float y0 = Float.parseFloat(tfYMin.getText().trim());
             float y1 = Float.parseFloat(tfYMax.getText().trim());
             int   s  = (Integer) spinSteps.getValue();
 
-            // Validace rozsahů
-            if (x0 >= x1) { status("X min musí být < X max", true); return; }
-            if (y0 >= y1) { status("Y min musí být < Y max", true); return; }
+            // Validate the ranges
+            if (x0 >= x1) { status("X min must be < X max", true); return; }
+            if (y0 >= y1) { status("Y min must be < Y max", true); return; }
 
-            // Ověření výrazu
+            // Validate the expression
             MathParser parser;
             try {
                 parser = new MathParser(expr);
                 parser.evaluate(0, 0, 0);
             } catch (ParseException pe) {
-                status("Chyba: " + pe.getMessage(), true); return;
+                status("Error: " + pe.getMessage(), true); return;
             }
 
-            // Vše je OK → pošle do rendereru
+            // Everything is OK → send it to the renderer
             renderer.applySettings(expr, x0, x1, y0, y1, s);
             renderer.setAnimating(cbAnimate.isSelected(), sliderAnimSpeed.getValue() * 0.2f);
 
             status("OK: " + expr, false);
 
         } catch (NumberFormatException e) {
-            status("Neplatná číselná hodnota", true);
+            status("Invalid number", true);
         }
 
         renderer.resetCamera(true);
     }
 
-    // Nastaví text a barvu status labelu
+    // Sets the text and color of the status label
     private void status(String msg, boolean err) {
         lblStatus.setText(msg);
         lblStatus.setForeground(err ? new Color(255, 100, 100) : new Color(100, 200, 130));
     }
 
-    // Pomocná funkce — formátuje float (bez zbytečných nul za čárkou)
+    // Helper — formats a float (without trailing zeros)
     private static String fmt(float v) {
         return v == (int) v ? String.valueOf((int) v) : String.valueOf(v);
     }
 
-    // Barvy
+    // Colors
     private static final Color BG     = new Color(22, 22, 30);
     private static final Color FG     = new Color(200, 200, 220);
     private static final Color INPUT  = new Color(38, 38, 52);
     private static final Color ACCENT = new Color(80, 130, 255);
     private static final Color BORDER = new Color(60, 60, 85);
 
-    // POMOCNÉ KOMPONENTY
-    // Nadpis sekce — modrý, tučný text
+    // HELPER COMPONENTS
+    // Section heading — blue bold text
     private JLabel sectionLabel(String t) {
         JLabel l = new JLabel(t);
         l.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -406,7 +406,7 @@ public class ControlPanel extends JPanel {
         return l;
     }
     
-    // Malý label — pro popisky
+    // Small label — for captions
     private JLabel smallLabel(String t) {
         JLabel l = new JLabel(t);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -414,7 +414,7 @@ public class ControlPanel extends JPanel {
         return l;
     }
     
-    // Hint label — monospace, bílý
+    // Hint label — monospace, white
     private JLabel hintLabel(String t) {
         JLabel l = new JLabel(t);
         l.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -423,7 +423,7 @@ public class ControlPanel extends JPanel {
         return l;
     }
     
-    // Textové pole s monospace fontem — pro zadávání výrazů
+    // Monospace text field — for entering expressions
     private JTextField monoField(String text, int cols) {
         JTextField tf = new JTextField(text, cols);
         tf.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -438,7 +438,7 @@ public class ControlPanel extends JPanel {
         return tf;
     }
     
-    // Textové pole pro numerické rozsahy
+    // Text field for numeric ranges
     private JTextField rangeField(String text) {
         JTextField tf = new JTextField(text, 5);
         tf.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -451,7 +451,7 @@ public class ControlPanel extends JPanel {
         return tf;
     }
     
-    // Velké accent tlačítko s hover efektem
+    // Large accent button with a hover effect
     private JButton accentButton(String text) {
         JButton b = new JButton(text);
         b.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -463,7 +463,7 @@ public class ControlPanel extends JPanel {
         b.setAlignmentX(LEFT_ALIGNMENT);
         b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
-        // Hover efekt — změní barvu
+        // Hover effect — changes the color
         b.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { b.setBackground(new Color(100, 150, 255)); }
             public void mouseExited (MouseEvent e) { b.setBackground(ACCENT); }
@@ -471,7 +471,7 @@ public class ControlPanel extends JPanel {
         return b;
     }
     
-    // Formátuje ComboBox
+    // Styles a ComboBox
     private void styleCombo(JComboBox<?> cb) {
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         cb.setBackground(INPUT);
@@ -480,7 +480,7 @@ public class ControlPanel extends JPanel {
         cb.setAlignmentX(LEFT_ALIGNMENT);
     }
     
-    // Formátuje Spinner
+    // Styles a Spinner
     private void styleSpinner(JSpinner sp) {
         JComponent ed = sp.getEditor();
         if (ed instanceof JSpinner.DefaultEditor de) {
@@ -490,12 +490,12 @@ public class ControlPanel extends JPanel {
         }
     }
     
-    // Vytvoří vertikální mezeru mezi komponentami
+    // Creates a vertical gap between components
     private Component vgap(int h) {
         return Box.createRigidArea(new Dimension(0, h));
     }
 
-    // Malé accent tlačítko — upravené accentButton s menší velikostí
+    // Small accent button — accentButton with a smaller size
     private JButton accentButtonSmall(String text) {
         JButton b = accentButton(text);
         b.setMaximumSize(new Dimension(240, 32));

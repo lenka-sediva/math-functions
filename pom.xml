@@ -34,22 +34,22 @@
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId></dependency>
 
-        <!-- Nativní knihovny: Windows x64 -->
+        <!-- Native libraries: Windows x64 -->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>natives-windows</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>natives-windows</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><classifier>natives-windows</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><classifier>natives-windows</classifier></dependency>
-        <!-- Nativní knihovny: Linux x64 -->
+        <!-- Native libraries: Linux x64 -->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>natives-linux</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>natives-linux</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><classifier>natives-linux</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><classifier>natives-linux</classifier></dependency>
-        <!-- Nativní knihovny: macOS Intel -->
+        <!-- Native libraries: macOS Intel -->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>natives-macos</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>natives-macos</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><classifier>natives-macos</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><classifier>natives-macos</classifier></dependency>
-        <!-- Nativní knihovny: macOS Apple Silicon -->
+        <!-- Native libraries: macOS Apple Silicon -->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>natives-macos-arm64</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>natives-macos-arm64</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><classifier>natives-macos-arm64</classifier></dependency>
@@ -57,7 +57,7 @@
     </dependencies>
 
     <build>
-        <!-- Zdrojáky jsou v src/ (struktura IntelliJ projektu), ne v src/main/java -->
+        <!-- Sources live in src/ (IntelliJ project layout), not in src/main/java -->
         <sourceDirectory>src</sourceDirectory>
         <finalName>math-functions</finalName>
 
@@ -84,7 +84,7 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
                                     <manifestEntries>
-                                        <!-- LWJGL načítá nativní knihovny (Java 22+ jinak vypisuje varování) -->
+                                        <!-- LWJGL loads native libraries (otherwise Java 22+ prints a warning) -->
                                         <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
                                     </manifestEntries>
                                 </transformer>

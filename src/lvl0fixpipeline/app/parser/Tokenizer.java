@@ -5,18 +5,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * TOKENIZER — Převádí string výrazu na seznam tokenů
- * 
- * Rozpoznává:
- * - Čísla (včetně vědeckého zápisu: 1e-3)
- * - Proměnné (x, y, t)
- * - Funkce (sin, cos, sqrt, ...)
- * - Operátory (+, -, *, /, ^, %)
- * - Závorky a čárky
- * - Speciální konstanty (pi, e)
+ * TOKENIZER — Turns an expression string into a list of tokens
+ *
+ * Recognizes:
+ * - Numbers (including scientific notation: 1e-3)
+ * - Variables (x, y, t)
+ * - Functions (sin, cos, sqrt, ...)
+ * - Operators (+, -, *, /, ^, %)
+ * - Parentheses and commas
+ * - Special constants (pi, e)
  */
 public class Tokenizer {
-    // seznam všech dostupných funkcí
+    // all available functions
     private static final Set<String> FUNCTIONS = Set.of(
             "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
             "sqrt", "cbrt", "exp", "log", "log10", "log2",
@@ -25,9 +25,9 @@ public class Tokenizer {
     );
 
     /**
-     * Tokenizuje vstupní string na seznam tokenů
-     * @param expr matematický výraz
-     * @return seznam tokenů
+     * Tokenizes the input string into a list of tokens
+     * @param expr math expression
+     * @return list of tokens
      */
     public List<Token> tokenize(String expr) throws ParseException {
         List<Token> tokens = new ArrayList<>();
@@ -37,22 +37,22 @@ public class Tokenizer {
         while (i < expr.length()) {
             char c = expr.charAt(i);
 
-            // Přeskočí mezery, tabulátory a další bílé znaky
+            // Skip spaces, tabs and other whitespace
             if (Character.isWhitespace(c)) {
                 i++;
                 continue;
             }
 
-            // Číslo
+            // Number
             if (Character.isDigit(c) || (c == '.' && i + 1 < expr.length() && Character.isDigit(expr.charAt(i + 1)))) {
                 StringBuilder num = new StringBuilder();
                 
-                // Načte číslo a desetinnou čárku
+                // Read the digits and the decimal point
                 while (i < expr.length() && (Character.isDigit(expr.charAt(i)) || expr.charAt(i) == '.')) {
                     num.append(expr.charAt(i++));
                 }
                 
-                // Vědecký zápis (scientific notation): 1e-3, 2.5e+10
+                // Scientific notation: 1e-3, 2.5e+10
                 if (i < expr.length() && (expr.charAt(i) == 'e')) {
                     num.append(expr.charAt(i++));
                     if (i < expr.length() && (expr.charAt(i) == '+' || expr.charAt(i) == '-')) {
@@ -66,43 +66,43 @@ public class Tokenizer {
                 try {
                     tokens.add(new Token(Double.parseDouble(num.toString())));
                 } catch (NumberFormatException e) {
-                    throw new ParseException("Neplatné číslo: " + num);
+                    throw new ParseException("Invalid number: " + num);
                 }
                 continue;
             }
 
-            // Identifikátory: funkce, proměnné, konstanty
+            // Identifiers: functions, variables, constants
             if (Character.isLetter(c)) {
                 StringBuilder ident = new StringBuilder();
-                // Načte identifikátor (abeceda, cifry, underscore)
+                // Read the identifier (letters, digits, underscore)
                 while (i < expr.length() && (Character.isLetterOrDigit(expr.charAt(i)) || expr.charAt(i) == '_')) {
                     ident.append(expr.charAt(i++));
                 }
                 String id = ident.toString();
                 
                 switch (id) {
-                    // Proměnné
+                    // Variables
                     case "x" -> tokens.add(new Token(TokenType.VARIABLE_X, "x"));
                     case "y" -> tokens.add(new Token(TokenType.VARIABLE_Y, "y"));
                     case "t" -> tokens.add(new Token(TokenType.VARIABLE_T, "t"));
                     
-                    // Speciální konstanty
+                    // Special constants
                     case "pi" -> tokens.add(new Token(Math.PI));
                     case "e" -> tokens.add(new Token(Math.E));
                     
-                    // Funkce
+                    // Functions
                     default -> {
                         if (FUNCTIONS.contains(id)) {
                             tokens.add(new Token(TokenType.FUNCTION, id));
                         } else {
-                            throw new ParseException("Neznámá funkce: '" + id + "'");
+                            throw new ParseException("Unknown function: '" + id + "'");
                         }
                     }
                 }
                 continue;
             }
 
-            // Operátory a závorky
+            // Operators and parentheses
             switch (c) {
                 case '+' -> {
                     tokens.add(new Token(TokenType.OPERATOR, "+"));
@@ -110,20 +110,20 @@ public class Tokenizer {
                 }
                 
                 case '-' -> {
-                    // Detekce unárního mínu:
-                    // Je-li na začátku výrazu, po operátoru nebo levé závorce → unární
+                    // Unary minus detection:
+                    // at the start of the expression, after an operator or a left parenthesis → unary
                     if (tokens.isEmpty() ||
                             tokens.getLast().type == TokenType.OPERATOR ||
                             tokens.getLast().type == TokenType.LEFT_PAREN) {
-                        tokens.add(new Token(TokenType.OPERATOR, "u-")); // unární minus
+                        tokens.add(new Token(TokenType.OPERATOR, "u-")); // unary minus
                     } else {
-                        tokens.add(new Token(TokenType.OPERATOR, "-")); // binární minus
+                        tokens.add(new Token(TokenType.OPERATOR, "-")); // binary minus
                     }
                     i++;
                 }
                 
                 case '*' -> {
-                    // Kontrola pro ** (alternativa k ^)
+                    // Check for ** (alternative to ^)
                     if (i + 1 < expr.length() && expr.charAt(i + 1) == '*') {
                         tokens.add(new Token(TokenType.OPERATOR, "^")); // ** → ^
                         i += 2;
@@ -163,7 +163,7 @@ public class Tokenizer {
                     i++;
                 }
                 
-                default -> throw new ParseException("Neočekávaný znak: '" + c + "'");
+                default -> throw new ParseException("Unexpected character: '" + c + "'");
             }
         }
         

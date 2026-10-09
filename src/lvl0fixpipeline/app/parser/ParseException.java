@@ -1,8 +1,8 @@
 package lvl0fixpipeline.app.parser;
 
 /**
- * EXCEPTION — Vyhazuje se při chybě parsingového procesu
- * Např. neznámá funkce, chyba v syntaxi, neuzavřené závorky atd.
+ * EXCEPTION — Thrown when parsing fails
+ * E.g. an unknown function, a syntax error, unclosed parentheses, etc.
  */
 public class ParseException extends Exception {
     public ParseException(String message) {

@@ -1,9 +1,9 @@
 package lvl0fixpipeline.app.parser;
 
 /**
- * TOKEN — Atomická jednotka výrazu
+ * TOKEN — An atomic unit of an expression
  * 
- * Příklady:
+ * Examples:
  * - Token(TokenType.NUMBER, 3.14)
  * - Token(TokenType.VARIABLE_X, "x")
  * - Token(TokenType.OPERATOR, "+")
@@ -15,7 +15,7 @@ public class Token {
     public final double number;
 
     /**
-     * Konstruktor pro non-numeric tokeny (operátor, funkce, proměnná)
+     * Constructor for non-numeric tokens (operator, function, variable)
      */
     public Token(TokenType type, String value) {
         this.type = type;
@@ -24,7 +24,7 @@ public class Token {
     }
 
     /**
-     * Konstruktor pro numerické tokeny
+     * Constructor for numeric tokens
      */
     public Token(double number) {
         this.type = TokenType.NUMBER;
