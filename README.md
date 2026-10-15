@@ -43,7 +43,6 @@
 - **Lighting and color**: two light sources (a warm key light and a cool fill light), a specular material and a height-based color map.
 - **Two UI toolkits working together**: a borderless GLFW OpenGL window runs on its own thread and is kept exactly aligned over a Swing layout. Thread-safe communication goes through `volatile` state, because the GLFW API is not thread-safe.
 - **3D camera math**: an orbit camera using spherical coordinates (azimuth/zenith/radius), plus perspective and orthographic projection.
-- **Screenshots from the GPU**: `glReadPixels` → PNG. The PNG is encoded off the render thread so the app doesn't stutter.
 - **Distribution**: a Maven build, a self-contained Windows app made with `jpackage`, and an automated release pipeline in GitHub Actions.
 
 ## How to run
