@@ -13,3 +13,8 @@ for the purpose of this university project:
 Third-party libraries (downloaded by Maven, bundled in release builds):
 
   - LWJGL 3 (https://www.lwjgl.org), BSD 3-Clause License
+
+The web version in web/ is entirely original code (MIT). It bundles two fonts:
+
+  - STIX Two Text (https://www.stixfonts.org), SIL Open Font License 1.1
+  - IBM Plex Mono (https://github.com/IBM/plex), SIL Open Font License 1.1

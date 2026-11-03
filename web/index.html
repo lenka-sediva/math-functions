@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Math Functions 3D</title>
+    <meta name="description" content="Type a math formula and explore it as an interactive 3D surface, right in the browser. Exact derivatives, contour lines, parametric surfaces and STL export." />
+    <meta name="author" content="Lenka Šedivá" />
+    <meta property="og:title" content="Math Functions 3D" />
+    <meta property="og:description" content="Type a formula, see it as a 3D surface you can rotate, animate and 3D print." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 22c5-12 9-12 14 0s9 12 14 0' fill='none' stroke='%232846c8' stroke-width='3'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="panel" aria-label="Controls">
+        <header class="masthead">
+          <h1>Math Functions 3D</h1>
+          <p class="lede">Type a formula and explore it as a 3D surface.</p>
+        </header>
+
+        <section class="formula" aria-label="Formula">
+          <div class="mode-switch" role="radiogroup" aria-label="Surface type">
+            <button type="button" role="radio" data-mode="explicit">z = f(x, y)</button>
+            <button type="button" role="radio" data-mode="parametric">Parametric</button>
+          </div>
+
+          <div class="equations explicit-only">
+            <label class="eq"><span class="eq-lhs">z =</span><input id="f" class="formula-input" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="formula-error" /></label>
+          </div>
+          <div class="equations parametric-only">
+            <label class="eq"><span class="eq-lhs">x =</span><input id="px" class="formula-input" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="formula-error" /></label>
+            <label class="eq"><span class="eq-lhs">y =</span><input id="py" class="formula-input" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="formula-error" /></label>
+            <label class="eq"><span class="eq-lhs">z =</span><input id="pz" class="formula-input" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="formula-error" /></label>
+          </div>
+          <p class="error" id="formula-error" role="alert" aria-live="polite"></p>
+
+          <label class="field">
+            <span>Examples</span>
+            <select id="preset"></select>
+          </label>
+        </section>
+
+        <section aria-labelledby="range-title">
+          <h2 id="range-title">Range</h2>
+          <div class="ranges">
+            <span class="range-name" id="a-name">x</span>
+            <label><span class="visually-hidden">start</span><input id="a0" class="num-input" spellcheck="false" autocomplete="off" /></label>
+            <span class="range-to">to</span>
+            <label><span class="visually-hidden">end</span><input id="a1" class="num-input" spellcheck="false" autocomplete="off" /></label>
+            <span class="range-name" id="b-name">y</span>
+            <label><span class="visually-hidden">start</span><input id="b0" class="num-input" spellcheck="false" autocomplete="off" /></label>
+            <span class="range-to">to</span>
+            <label><span class="visually-hidden">end</span><input id="b1" class="num-input" spellcheck="false" autocomplete="off" /></label>
+          </div>
+          <label class="field slider">
+            <span>Detail <output id="res-out"></output></span>
+            <input id="res" type="range" min="10" max="400" step="10" />
+          </label>
+        </section>
+
+        <section aria-labelledby="anim-title">
+          <h2 id="anim-title">Animation</h2>
+          <div class="anim-row">
+            <button type="button" id="play" class="button"></button>
+            <output id="t-out" class="t-out"></output>
+          </div>
+          <label class="field slider">
+            <span>Speed <output id="speed-out"></output></span>
+            <input id="speed" type="range" min="0.1" max="3" step="0.1" />
+          </label>
+          <p class="hint" id="anim-hint"></p>
+        </section>
+
+        <section aria-labelledby="display-title">
+          <h2 id="display-title">Display</h2>
+          <div class="checks">
+            <label><input type="checkbox" data-show="surface" /> Surface</label>
+            <label><input type="checkbox" data-show="wireframe" /> Wireframe</label>
+            <label><input type="checkbox" data-show="contours" /> Contour lines</label>
+            <label class="explicit-only"><input type="checkbox" data-show="floor" /> Heatmap below</label>
+            <label><input type="checkbox" data-show="axes" /> Axes</label>
+            <label><input type="checkbox" data-show="grid" /> Floor grid</label>
+            <label><input type="checkbox" data-show="normals" /> Normals</label>
+            <label class="explicit-only"><input type="checkbox" id="true-scale" /> True height</label>
+          </div>
+          <p class="hint" id="scale-hint"></p>
+        </section>
+
+        <section aria-labelledby="analysis-title">
+          <h2 id="analysis-title">Analysis</h2>
+          <div id="derivs" class="derivs-wrap"></div>
+          <div class="inspector" id="inspector"></div>
+          <label class="check-line explicit-only"><input type="checkbox" id="critical" /> Find maxima, minima and saddle points</label>
+          <div id="critical-list" class="critical-list explicit-only"></div>
+        </section>
+
+        <section aria-labelledby="export-title">
+          <h2 id="export-title">Export and share</h2>
+          <div class="buttons">
+            <button type="button" class="button" id="copy-link">Copy link</button>
+            <button type="button" class="button" id="save-png">Save image</button>
+            <button type="button" class="button" id="save-stl">Download STL</button>
+          </div>
+          <label class="check-line explicit-only"><input type="checkbox" id="stl-solid" checked /> Closed solid for 3D printing</label>
+          <p class="hint">The STL matches what you see at the current moment. Its largest side is 100 mm.</p>
+        </section>
+
+        <details class="help">
+          <summary>Mouse and keyboard</summary>
+          <table>
+            <tbody>
+              <tr><td>Drag</td><td>Rotate</td></tr>
+              <tr><td>Right drag or Shift + drag</td><td>Pan</td></tr>
+              <tr><td>Wheel or pinch</td><td>Zoom</td></tr>
+              <tr><td>Click the surface</td><td>Inspect a point</td></tr>
+              <tr><td><kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd></td><td>View along an axis</td></tr>
+              <tr><td><kbd>R</kbd></td><td>Reset the view</td></tr>
+              <tr><td><kbd>P</kbd></td><td>Perspective or orthographic</td></tr>
+              <tr><td><kbd>Space</kbd></td><td>Play or pause</td></tr>
+              <tr><td><kbd>M</kbd> <kbd>C</kbd> <kbd>N</kbd></td><td>Wireframe, contours, normals</td></tr>
+              <tr><td><kbd>O</kbd> <kbd>K</kbd></td><td>Axes, floor grid</td></tr>
+              <tr><td><kbd>Esc</kbd></td><td>Clear the inspected point</td></tr>
+            </tbody>
+          </table>
+          <p class="hint">Functions: sin cos tan asin acos atan atan2 sinh cosh tanh sqrt cbrt exp log log10 log2 abs floor ceil round sign trunc pow min max. Constants: pi, e. Operators: + − * / ^ %. You can write 2x instead of 2*x.</p>
+        </details>
+
+        <footer class="colophon">
+          <p>Made by Lenka Šedivá. <a href="https://github.com/lenka-sediva/math-functions">Source code</a> and a <a href="https://github.com/lenka-sediva/math-functions/releases/latest">desktop version for Windows</a>.</p>
+        </footer>
+      </aside>
+
+      <main class="stage">
+        <canvas id="gl" aria-label="3D view of the surface"></canvas>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+        <div class="caption" id="caption" aria-live="polite"></div>
+        <div class="toolbar" role="toolbar" aria-label="View">
+          <button type="button" data-view="x" title="View along the x axis (X)">x</button>
+          <button type="button" data-view="y" title="View along the y axis (Y)">y</button>
+          <button type="button" data-view="z" title="View from above (Z)">z</button>
+          <button type="button" id="proj" title="Perspective or orthographic (P)"></button>
+          <button type="button" id="reset-view" title="Reset the view (R)">Reset</button>
+        </div>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="fallback" id="fallback" hidden>
+          <p>This page needs WebGL2, which this browser doesn't provide. Try a current version of Chrome, Firefox, Safari or Edge, or download the <a href="https://github.com/lenka-sediva/math-functions/releases/latest">desktop version</a>.</p>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

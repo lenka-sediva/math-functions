@@ -3,10 +3,11 @@
 **Type in a math formula and see it as an interactive 3D surface that you can rotate, zoom and animate.**
 
 <p>
-  <img src="docs/images/app-window.png" width="100%" alt="Application window with control panel">
+  <img src="docs/images/web-app.png" width="100%" alt="The web version: a surface with two hills and a pit, the tangent plane at a clicked point, and the maxima, minima and saddle point it found">
 </p>
 
-**[⬇ Download for Windows](https://github.com/lenka-sediva/math-functions/releases/latest)** (no installation and no Java needed)
+**[▶ Try it in your browser](https://lenka-sediva.github.io/math-functions/)** (works on any computer and phone)
+or **[⬇ download the desktop app for Windows](https://github.com/lenka-sediva/math-functions/releases/latest)** (no installation and no Java needed)
 
 > **Windows may warn you:** "Windows protected your PC" / "Unknown publisher". This appears for every new app
 > that is not code-signed (signing costs money); it doesn't mean the app is harmful. Click **More info → Run anyway**.
@@ -14,6 +15,24 @@
 > straight from this repository. [How to verify the download](#verify-the-download).
 
 ---
+
+## Two versions
+
+| | Web version ([`web/`](web/)) | Desktop version ([`src/`](src/)) |
+|---|---|---|
+| Runs on | any browser with WebGL2, including phones | Windows 10/11 |
+| Language | TypeScript | Java 21 |
+| Rendering | WebGL2 with custom shaders; the surface is computed on the GPU | OpenGL fixed-function pipeline via LWJGL |
+| Normals | exact, from symbolic derivatives | central differences |
+| Extras | parametric surfaces, tangent plane, critical points, contour lines, STL export, shareable links | |
+
+How the web version works is described in [web/README.md](web/README.md).
+
+The rest of this page is about the desktop version.
+
+<p>
+  <img src="docs/images/app-window.png" width="100%" alt="Desktop application window with control panel">
+</p>
 
 ## Features
 
@@ -71,13 +90,6 @@ The result must match the line for that file in `SHA256SUMS.txt`. You can also u
 mvn package
 java -jar target/math-functions-all.jar
 ```
-
-### Run the tests
-```
-mvn test
-```
-The JUnit tests (in `test/`) cover the expression parser: tokenizer, Shunting-yard conversion and evaluation.
-GitHub Actions runs them on every push and pull request.
 
 > Runs on **Windows 10/11**. The app overlays a GLFW window on a Swing window, and this technique is not supported on macOS or Wayland.
 > Formulas use standard math notation.

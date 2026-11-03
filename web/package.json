@@ -1,0 +1,25 @@
+{
+  "name": "math-functions-web",
+  "version": "2.0.0",
+  "description": "Browser version of Math Functions 3D: formula to interactive WebGL2 surface",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "Lenka Šedivá",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^6.4.5",
+    "vitest": "^3.2.7"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/stix-two-text": "^5.3.0"
+  },
+  "private": true,
+  "type": "module"
+}
