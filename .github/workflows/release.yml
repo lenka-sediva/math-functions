@@ -23,8 +23,11 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Run tests
+        run: mvn -B test
+
       - name: Build fat JAR
-        run: mvn -B package
+        run: mvn -B package -DskipTests
 
       - name: Package Windows app with bundled Java (jpackage)
         shell: pwsh

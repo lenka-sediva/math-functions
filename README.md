@@ -72,6 +72,13 @@ mvn package
 java -jar target/math-functions-all.jar
 ```
 
+### Run the tests
+```
+mvn test
+```
+The JUnit tests (in `test/`) cover the expression parser: tokenizer, Shunting-yard conversion and evaluation.
+GitHub Actions runs them on every push and pull request.
+
 > Runs on **Windows 10/11**. The app overlays a GLFW window on a Swing window, and this technique is not supported on macOS or Wayland.
 > Formulas use standard math notation.
 

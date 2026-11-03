@@ -111,10 +111,11 @@ public class Tokenizer {
                 
                 case '-' -> {
                     // Unary minus detection:
-                    // at the start of the expression, after an operator or a left parenthesis → unary
+                    // at the start of the expression, after an operator, a left parenthesis or a comma → unary
                     if (tokens.isEmpty() ||
                             tokens.getLast().type == TokenType.OPERATOR ||
-                            tokens.getLast().type == TokenType.LEFT_PAREN) {
+                            tokens.getLast().type == TokenType.LEFT_PAREN ||
+                            tokens.getLast().type == TokenType.COMMA) {
                         tokens.add(new Token(TokenType.OPERATOR, "u-")); // unary minus
                     } else {
                         tokens.add(new Token(TokenType.OPERATOR, "-")); // binary minus
