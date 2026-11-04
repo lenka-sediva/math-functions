@@ -236,8 +236,10 @@ export class Renderer {
     const cy = m[1] * w[0] + m[5] * w[1] + m[9] * w[2] + m[13];
     const cw = m[3] * w[0] + m[7] * w[1] + m[11] * w[2] + m[15];
     if (cw <= 0) return null;
-    const rect = this.canvas.getBoundingClientRect();
-    return { x: ((cx / cw + 1) / 2) * rect.width, y: ((1 - cy / cw) / 2) * rect.height };
+    // Layout size, not getBoundingClientRect: on phones the view is shrunk with a CSS transform,
+    // and the overlay should shrink along with the surface instead of being redrawn at full size.
+    const { clientWidth: width, clientHeight: height } = this.canvas;
+    return { x: ((cx / cw + 1) / 2) * width, y: ((1 - cy / cw) / 2) * height };
   }
 
   resetCamera() {

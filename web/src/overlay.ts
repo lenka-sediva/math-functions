@@ -25,7 +25,7 @@ export interface OverlayInput {
 
 export function drawOverlay(ctx: CanvasRenderingContext2D, { renderer, t, showAxes, critical }: OverlayInput) {
   const canvas = ctx.canvas;
-  const dpr = canvas.width / Math.max(1, canvas.getBoundingClientRect().width);
+  const dpr = canvas.width / Math.max(1, canvas.clientWidth);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

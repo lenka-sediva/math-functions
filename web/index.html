@@ -131,9 +131,11 @@
       </aside>
 
       <main class="stage">
-        <canvas id="gl" aria-label="3D view of the surface"></canvas>
-        <canvas id="overlay" aria-hidden="true"></canvas>
-        <div class="caption" id="caption" aria-live="polite"></div>
+        <div class="view">
+          <canvas id="gl" aria-label="3D view of the surface"></canvas>
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <div class="caption" id="caption" aria-live="polite"></div>
+        </div>
         <div class="toolbar" role="toolbar" aria-label="View">
           <button type="button" data-view="x" title="View along the x axis (X)">x</button>
           <button type="button" data-view="y" title="View along the y axis (Y)">y</button>

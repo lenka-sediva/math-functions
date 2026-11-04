@@ -17,6 +17,8 @@ const glCanvas = $<HTMLCanvasElement>('gl');
 const overlayCanvas = $<HTMLCanvasElement>('overlay');
 const overlay = overlayCanvas.getContext('2d')!;
 const stage = document.querySelector<HTMLElement>('.stage')!;
+/** Holds the canvases at full size; on phones it is scaled down into a preview, see updateShrink. */
+const view = document.querySelector<HTMLElement>('.view')!;
 
 const inputs = {
   f: $<HTMLInputElement>('f'),
@@ -327,15 +329,40 @@ function drawFrame() {
 
 function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const w = Math.max(1, Math.round(stage.clientWidth * dpr));
-  const h = Math.max(1, Math.round(stage.clientHeight * dpr));
+  const w = Math.max(1, Math.round(view.clientWidth * dpr));
+  const h = Math.max(1, Math.round(view.clientHeight * dpr));
+  let changed = false;
   for (const c of [glCanvas, overlayCanvas]) {
     if (c.width !== w || c.height !== h) {
       c.width = w;
       c.height = h;
+      changed = true;
     }
   }
-  invalidate();
+  // Resizing clears the canvases; draw now rather than on the next frame, or one blank frame shows.
+  if (changed && surface) drawFrame();
+  else invalidate();
+  minFraction = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stage-min')) || 0.42;
+  updateShrink();
+}
+
+// Phones: the view sits above the controls and shrinks into a preview as the page scrolls.
+const narrow = window.matchMedia('(max-width: 860px)');
+/** Height the preview keeps, as a fraction of the full view; set in style.css. */
+let minFraction = 0.42;
+
+function updateShrink() {
+  let shrink = 0;
+  if (narrow.matches) {
+    const range = view.clientHeight * (1 - minFraction);
+    shrink = range > 0 ? Math.min(1, Math.max(0, window.scrollY / range)) : 0;
+  }
+  stage.style.setProperty('--shrink', shrink.toFixed(4));
+  stage.classList.toggle('compact', shrink > 0.02);
+}
+
+function expandView() {
+  window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
 }
 
 // ---------------------------------------------------------------------------
@@ -552,7 +579,9 @@ function endPointer(e: PointerEvent) {
   const wasSingle = pointers.size === 1;
   pointers.delete(e.pointerId);
   if (pointers.size === 0) glCanvas.classList.remove('dragging');
-  if (wasSingle && dragMoved < 5 && e.type === 'pointerup' && e.button === 0 && !e.shiftKey) inspectAt(e);
+  const tap = wasSingle && dragMoved < 5 && e.type === 'pointerup' && e.button === 0 && !e.shiftKey;
+  if (tap && stage.classList.contains('compact')) expandView();
+  else if (tap) inspectAt(e);
   else if (dragMoved > 0) scheduleUrlUpdate();
 }
 glCanvas.addEventListener('pointerup', endPointer);
@@ -683,7 +712,9 @@ $('save-stl').addEventListener('click', () => {
 writeForm();
 renderer.options = { ...state.show };
 renderer.setResolution(state.res);
-new ResizeObserver(resize).observe(stage);
+new ResizeObserver(resize).observe(view);
+window.addEventListener('scroll', updateShrink, { passive: true });
+narrow.addEventListener('change', updateShrink);
 resize();
 rebuild('reset');
 if (state.camera && surface) {
